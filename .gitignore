@@ -1,0 +1,48 @@
+## Ignorer les fichiers de compilation ##
+bin/
+obj/
+**/[Bb]in/
+**/[Oo]bj/
+
+## Ignorer les fichiers de base de données ##
+*.mdf
+*.ldf
+*.sqlite
+*.db
+
+## Ignorer les fichiers utilisateur ##
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Ignorer les secrets et fichiers de configuration sensibles ##
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+appsettings.Local.json
+secrets.json
+
+## Ignorer les packages NuGet ##
+**/packages/*
+!**/packages/repositories.config
+*.nupkg
+
+## Ignorer les dossiers de publication ##
+publish/
+**/wwwroot/lib/
+
+## Ignorer les fichiers VS/VS Code ##
+.vs/
+.vscode/
+*.swp
+*.swo
+
+## Ignorer les logs et fichiers temporaires ##
+*.log
+*.tmp
+*.temp
+
+## Ignorer les fichiers système ##
+Thumbs.db
+.DS_Store
