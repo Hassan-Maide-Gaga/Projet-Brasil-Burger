@@ -1,0 +1,341 @@
+-- Base de données: brasil_burger
+-- Date de création: Décembre 2025
+
+CREATE DATABASE IF NOT EXISTS brasil_burger;
+USE brasil_burger;
+
+-- Table UTILISATEUR
+CREATE TABLE utilisateur (
+    id_utilisateur INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(50) NOT NULL,
+    prenom VARCHAR(50) NOT NULL,
+    telephone VARCHAR(20) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    mot_de_passe VARCHAR(255) NOT NULL,
+    role ENUM('client', 'gestionnaire', 'livreur') NOT NULL DEFAULT 'client',
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    est_archive BOOLEAN DEFAULT FALSE
+);
+
+-- Table CLIENT
+CREATE TABLE client (
+    id_client INT PRIMARY KEY,
+    adresse TEXT,
+    FOREIGN KEY (id_client) REFERENCES utilisateur(id_utilisateur) ON DELETE CASCADE
+);
+
+-- Table GESTIONNAIRE
+CREATE TABLE gestionnaire (
+    id_gestionnaire INT PRIMARY KEY,
+    FOREIGN KEY (id_gestionnaire) REFERENCES utilisateur(id_utilisateur) ON DELETE CASCADE
+);
+
+-- Table LIVREUR
+CREATE TABLE livreur (
+    id_livreur INT PRIMARY KEY,
+    vehicule VARCHAR(50),
+    est_disponible BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (id_livreur) REFERENCES utilisateur(id_utilisateur) ON DELETE CASCADE
+);
+
+-- Table PRODUIT
+CREATE TABLE produit (
+    id_produit INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(100) NOT NULL,
+    prix DECIMAL(10,2) NOT NULL CHECK (prix >= 0),
+    image VARCHAR(255),
+    description TEXT,
+    est_archive BOOLEAN DEFAULT FALSE,
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    type ENUM('burger', 'menu', 'complement', 'boisson', 'frite') NOT NULL
+);
+
+-- Table BURGER
+CREATE TABLE burger (
+    id_burger INT PRIMARY KEY,
+    FOREIGN KEY (id_burger) REFERENCES produit(id_produit) ON DELETE CASCADE
+);
+
+-- Table COMPLEMENT
+CREATE TABLE complement (
+    id_complement INT PRIMARY KEY,
+    type ENUM('sauce', 'supplement', 'accompagnement') NOT NULL,
+    FOREIGN KEY (id_complement) REFERENCES produit(id_produit) ON DELETE CASCADE
+);
+
+-- Table BOISSON
+CREATE TABLE boisson (
+    id_boisson INT PRIMARY KEY,
+    taille ENUM('petite', 'moyenne', 'grande') NOT NULL DEFAULT 'moyenne',
+    FOREIGN KEY (id_boisson) REFERENCES produit(id_produit) ON DELETE CASCADE
+);
+
+-- Table FRITE
+CREATE TABLE frite (
+    id_frite INT PRIMARY KEY,
+    taille ENUM('petite', 'moyenne', 'grande') NOT NULL DEFAULT 'moyenne',
+    FOREIGN KEY (id_frite) REFERENCES produit(id_produit) ON DELETE CASCADE
+);
+
+-- Table MENU
+CREATE TABLE menu (
+    id_menu INT PRIMARY KEY,
+    id_burger INT NOT NULL,
+    id_boisson INT NOT NULL,
+    id_frite INT NOT NULL,
+    FOREIGN KEY (id_menu) REFERENCES produit(id_produit) ON DELETE CASCADE,
+    FOREIGN KEY (id_burger) REFERENCES burger(id_burger),
+    FOREIGN KEY (id_boisson) REFERENCES boisson(id_boisson),
+    FOREIGN KEY (id_frite) REFERENCES frite(id_frite)
+);
+
+-- Table COMMANDE
+CREATE TABLE commande (
+    id_commande INT PRIMARY KEY AUTO_INCREMENT,
+    date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    statut ENUM('en_attente', 'validee', 'en_preparation', 'pret', 'termine', 'annulee', 'en_livraison', 'livree') NOT NULL DEFAULT 'en_attente',
+    mode_consommation ENUM('sur_place', 'a_emporter', 'livraison') NOT NULL,
+    adresse_livraison TEXT,
+    total DECIMAL(10,2) NOT NULL CHECK (total >= 0),
+    id_client INT NOT NULL,
+    id_livreur INT,
+    FOREIGN KEY (id_client) REFERENCES client(id_client) ON DELETE CASCADE,
+    FOREIGN KEY (id_livreur) REFERENCES livreur(id_livreur) ON DELETE SET NULL
+);
+
+-- Table LIGNE_COMMANDE
+CREATE TABLE ligne_commande (
+    id_ligne INT PRIMARY KEY AUTO_INCREMENT,
+    quantite INT NOT NULL CHECK (quantite > 0),
+    prix_unitaire DECIMAL(10,2) NOT NULL,
+    id_commande INT NOT NULL,
+    id_produit INT NOT NULL,
+    FOREIGN KEY (id_commande) REFERENCES commande(id_commande) ON DELETE CASCADE,
+    FOREIGN KEY (id_produit) REFERENCES produit(id_produit)
+);
+
+-- Table COMPLEMENT_COMMANDE
+CREATE TABLE complement_commande (
+    id_ligne INT,
+    id_complement INT,
+    quantite INT DEFAULT 1,
+    PRIMARY KEY (id_ligne, id_complement),
+    FOREIGN KEY (id_ligne) REFERENCES ligne_commande(id_ligne) ON DELETE CASCADE,
+    FOREIGN KEY (id_complement) REFERENCES complement(id_complement)
+);
+
+-- Table PAIEMENT
+CREATE TABLE paiement (
+    id_paiement INT PRIMARY KEY AUTO_INCREMENT,
+    date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    montant DECIMAL(10,2) NOT NULL CHECK (montant > 0),
+    methode ENUM('wave', 'om', 'especes') NOT NULL,
+    reference VARCHAR(100) UNIQUE,
+    id_commande INT UNIQUE NOT NULL,
+    FOREIGN KEY (id_commande) REFERENCES commande(id_commande) ON DELETE CASCADE
+);
+
+-- Table ZONE
+CREATE TABLE zone (
+    id_zone INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(50) UNIQUE NOT NULL,
+    prix DECIMAL(10,2) NOT NULL CHECK (prix >= 0)
+);
+
+-- Table QUARTIER
+CREATE TABLE quartier (
+    id_quartier INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(50) NOT NULL,
+    id_zone INT NOT NULL,
+    FOREIGN KEY (id_zone) REFERENCES zone(id_zone) ON DELETE CASCADE,
+    UNIQUE(nom, id_zone)
+);
+
+-- Table LIVRAISON
+CREATE TABLE livraison (
+    id_livraison INT PRIMARY KEY AUTO_INCREMENT,
+    date_heure DATETIME NOT NULL,
+    statut ENUM('en_attente', 'en_cours', 'termine') NOT NULL DEFAULT 'en_attente',
+    id_zone INT NOT NULL,
+    id_livreur INT NOT NULL,
+    FOREIGN KEY (id_zone) REFERENCES zone(id_zone),
+    FOREIGN KEY (id_livreur) REFERENCES livreur(id_livreur)
+);
+
+-- Table COMMANDE_LIVRAISON
+CREATE TABLE commande_livraison (
+    id_commande INT,
+    id_livraison INT,
+    PRIMARY KEY (id_commande, id_livraison),
+    FOREIGN KEY (id_commande) REFERENCES commande(id_commande) ON DELETE CASCADE,
+    FOREIGN KEY (id_livraison) REFERENCES livraison(id_livraison) ON DELETE CASCADE
+);
+
+-- Index pour optimisation
+CREATE INDEX idx_commande_statut ON commande(statut);
+CREATE INDEX idx_commande_date ON commande(date);
+CREATE INDEX idx_commande_client ON commande(id_client);
+CREATE INDEX idx_produit_type ON produit(type);
+CREATE INDEX idx_produit_archive ON produit(est_archive);
+CREATE INDEX idx_livraison_statut ON livraison(statut);
+CREATE INDEX idx_livraison_date ON livraison(date_heure);
+
+-- Vues pour les statistiques
+CREATE VIEW vue_statistiques_journalieres AS
+SELECT 
+    DATE(c.date) as jour,
+    COUNT(CASE WHEN c.statut IN ('en_preparation', 'pret', 'en_livraison') THEN 1 END) as commandes_en_cours,
+    COUNT(CASE WHEN c.statut = 'validee' THEN 1 END) as commandes_validees,
+    SUM(CASE WHEN p.methode IS NOT NULL THEN p.montant ELSE 0 END) as recettes,
+    COUNT(CASE WHEN c.statut = 'annulee' THEN 1 END) as commandes_annulees
+FROM commande c
+LEFT JOIN paiement p ON c.id_commande = p.id_commande
+WHERE DATE(c.date) = CURDATE()
+GROUP BY DATE(c.date);
+
+CREATE VIEW vue_top_burgers AS
+SELECT 
+    p.nom as burger_nom,
+    SUM(lc.quantite) as quantite_vendue,
+    DATE(c.date) as jour
+FROM ligne_commande lc
+JOIN commande c ON lc.id_commande = c.id_commande
+JOIN produit p ON lc.id_produit = p.id_produit
+WHERE p.type = 'burger' 
+    AND DATE(c.date) = CURDATE()
+    AND c.statut != 'annulee'
+GROUP BY p.id_produit, p.nom, DATE(c.date)
+ORDER BY quantite_vendue DESC;
+
+-- Procédures stockées
+DELIMITER $$
+
+CREATE PROCEDURE calculer_total_commande(IN cmd_id INT)
+BEGIN
+    DECLARE total_cmd DECIMAL(10,2);
+    
+    SELECT SUM(lc.quantite * lc.prix_unitaire) INTO total_cmd
+    FROM ligne_commande lc
+    WHERE lc.id_commande = cmd_id;
+    
+    UPDATE commande 
+    SET total = COALESCE(total_cmd, 0)
+    WHERE id_commande = cmd_id;
+END$$
+
+CREATE TRIGGER after_insert_ligne_commande
+AFTER INSERT ON ligne_commande
+FOR EACH ROW
+BEGIN
+    CALL calculer_total_commande(NEW.id_commande);
+END$$
+
+CREATE TRIGGER after_update_ligne_commande
+AFTER UPDATE ON ligne_commande
+FOR EACH ROW
+BEGIN
+    CALL calculer_total_commande(NEW.id_commande);
+END$$
+
+CREATE TRIGGER after_delete_ligne_commande
+AFTER DELETE ON ligne_commande
+FOR EACH ROW
+BEGIN
+    CALL calculer_total_commande(OLD.id_commande);
+END$$
+
+DELIMITER ;
+
+-- Données de test
+INSERT INTO utilisateur (nom, prenom, telephone, email, mot_de_passe, role) VALUES
+('Admin', 'System', '771234567', 'admin@brasilburger.com', '$2y$10$YourHashHere', 'gestionnaire'),
+('Client', 'Test', '771234568', 'client@test.com', '$2y$10$YourHashHere', 'client'),
+('Livreur', 'Test', '771234569', 'livreur@test.com', '$2y$10$YourHashHere', 'livreur');
+
+INSERT INTO client (id_client, adresse) VALUES (2, '123 Rue Test, Dakar');
+INSERT INTO gestionnaire (id_gestionnaire) VALUES (1);
+INSERT INTO livreur (id_livreur, vehicule, est_disponible) VALUES (3, 'Moto', TRUE);
+
+-- Insertion des produits de base
+INSERT INTO produit (nom, prix, type, description) VALUES
+-- Burgers
+('Brasil Burger', 3500, 'burger', 'Notre burger signature'),
+('Cheese Burger', 3000, 'burger', 'Burger au fromage fondu'),
+('Chicken Burger', 3200, 'burger', 'Burger au poulet croustillant'),
+-- Compléments
+('Sauce BBQ', 500, 'complement', 'Sauce barbecue maison'),
+('Sauce Blanche', 500, 'complement', 'Sauce spéciale'),
+('Extra Fromage', 800, 'complement', 'Supplément fromage'),
+-- Boissons
+('Coca Cola', 1000, 'boisson', 'Boisson gazeuse'),
+('Fanta', 1000, 'boisson', 'Boisson gazeuse orange'),
+('Eau Minérale', 800, 'boisson', 'Eau plate 50cl'),
+-- Frites
+('Frites Classiques', 1500, 'frite', 'Frites maison'),
+('Frites Fromage', 2000, 'frite', 'Frites au fromage');
+
+-- Insertion dans les tables spécifiques
+INSERT INTO burger (id_burger) VALUES (1), (2), (3);
+INSERT INTO complement (id_complement, type) VALUES (4, 'sauce'), (5, 'sauce'), (6, 'supplement');
+INSERT INTO boisson (id_boisson, taille) VALUES (7, 'moyenne'), (8, 'moyenne'), (9, 'moyenne');
+INSERT INTO frite (id_frite, taille) VALUES (10, 'moyenne'), (11, 'moyenne');
+
+-- Insertion d'un menu
+INSERT INTO produit (nom, prix, type, description) VALUES
+('Menu Brasil Complet', 5500, 'menu', 'Burger + Frites + Boisson');
+
+INSERT INTO menu (id_menu, id_burger, id_boisson, id_frite) VALUES
+(12, 1, 7, 10);
+
+-- Zones de livraison
+INSERT INTO zone (nom, prix) VALUES
+('Plateau', 1000),
+('Mermoz', 1500),
+('Ouest Foire', 2000);
+
+INSERT INTO quartier (nom, id_zone) VALUES
+('Plateau Médina', 1),
+('Plateau Rue 10', 1),
+('Mermoz Sacré Coeur', 2),
+('Mermoz Pyrotechnie', 2),
+('Ouest Foire', 3);
+
+
+
+=========MLD=========
+UTILISATEUR (id_utilisateur, nom, prenom, telephone, email, mot_de_passe, role, date_creation, est_archive)
+CLIENT (id_client#, adresse)
+GESTIONNAIRE (id_gestionnaire#)
+LIVREUR (id_livreur#, vehicule, est_disponible)
+
+PRODUIT (id_produit, nom, prix, image, description, est_archive, date_creation, type)
+BURGER (id_burger#)
+COMPLEMENT (id_complement#, type)
+BOISSON (id_boisson#, taille)
+FRITE (id_frite#, taille)
+
+MENU (id_menu#, id_burger, id_boisson, id_frite)
+
+COMMANDE (id_commande, date, statut, mode_consommation, adresse_livraison, total, id_client#, id_livreur)
+
+LIGNE_COMMANDE (id_ligne, quantite, prix_unitaire, id_commande#, id_produit)
+
+COMPLEMENT_COMMANDE (id_ligne#, id_complement#)
+
+PAIEMENT (id_paiement, date, montant, methode, reference, id_commande#)
+
+ZONE (id_zone, nom, prix)
+
+QUARTIER (id_quartier, nom, id_zone#)
+
+LIVRAISON (id_livraison, date_heure, statut, id_zone#, id_livreur#)
+
+COMMANDE_LIVRAISON (id_commande#, id_livraison#)
+
+VUE_STATISTIQUES (
+    commandes_jour: int,
+    commandes_validees_jour: int,
+    recettes_jour: decimal,
+    top_burgers: liste,
+    commandes_annulees_jour: int
+)
