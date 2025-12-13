@@ -1,0 +1,13 @@
+# .dockerignore dans brasil-burger-java/
+target/
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+*.log
+*.jar
+*.war
+*.ear
+.DS_Store
+.git/
