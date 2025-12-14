@@ -1,0 +1,58 @@
+# render.yaml à la racine de votre projet (pas dans brasil-burger-java/)
+services:
+  # Base de données MySQL
+  - type: pserv
+    name: brasil-burger-mysql
+    env: docker
+    image: mysql:8.0
+    disk:
+      name: mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 1
+    envVars:
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true
+      - key: MYSQL_DATABASE
+        value: brasil_burger
+      - key: MYSQL_USER
+        value: root
+      - key: MYSQL_PASSWORD
+        generateValue: false
+    port: 3306
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
+
+  # Application Java
+  - type: web
+    name: brasil-burger-java
+    env: docker
+    dockerfilePath: ./brasil-burger-java/Dockerfile
+    dockerContext: ./brasil-burger-java
+    envVars:
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: brasil-burger-mysql
+          property: host
+      - key: DB_PORT
+        fromService:
+          type: pserv
+          name: brasil-burger-mysql
+          property: port
+      - key: DB_NAME
+        value: brasilburger
+      - key: DB_USER
+        value: brasiluser
+      - key: DB_PASSWORD
+        fromService:
+          type: pserv
+          name: brasil-burger-mysql
+          property: password
+      - key: JAVA_OPTS
+        value: "-Xmx256m -Xms128m"
+      - key: PORT
+        value: 8080
+    healthCheckPath: /health
+    autoDeploy: true
+    plan: free

@@ -1,6 +1,6 @@
-package org.example.Model;
+package org.example.model;
 
-import org.example.Model.Enum.RoleUtilisateur;
+import org.example.model.enums.RoleUtilisateur;
 import java.time.LocalDateTime;
 
 public abstract class Utilisateur {

@@ -1,372 +1,341 @@
-package org.example.Vue;
+// Fichier: src/main/java/org/example/vue/ComplementVue.java
+package org.example.vue;
 
-import org.example.Model.Burger;
-import org.example.Model.Complement;
-import org.example.Model.Enum.TypeComplement;
-import org.example.Model.Menu;
-import org.example.Service.BurgerService;
-import org.example.Service.ComplementService;
-import org.example.Service.MenuService;
-import org.example.config.factory.service.ServiceFactory;
+import org.example.model.Complement;
+import org.example.service.ComplementService;
+
+import java.io.File;
 import java.util.List;
 
 public class ComplementVue extends Vue {
-
     private final ComplementService complementService;
 
     public ComplementVue() {
-        this.complementService = ServiceFactory.getComplementService();
+        super();
+        this.complementService = new ComplementService();
     }
 
-    public void afficherMenuComplement() {
+    @Override
+    public void afficher() {
         boolean continuer = true;
 
         while (continuer) {
-            afficherTitre("GESTION DES COMPLÉMENTS");
-            String[] options = {
-                    "Lister tous les compléments",
-                    "Lister par type",
-                    "Ajouter un complément",
-                    "Modifier un complément",
-                    "Archiver un complément",
-                    "Supprimer un complément",
-                    "Rechercher un complément",
-                    "Lister les boissons",
-                    "Lister les frites",
-                    "Lister les sauces"
-            };
-            afficherMenu(options);
+            afficherMenuComplement();
+            Integer choix = lireEntier("\nVotre choix");
 
-            int choix = lireChoix("\nVotre choix: ");
+            if (choix == null) {
+                continue;
+            }
 
             switch (choix) {
                 case 1:
-                    listerTousComplements();
+                    creerComplement();
                     break;
                 case 2:
-                    listerParType();
+                    listerComplements();
                     break;
                 case 3:
-                    ajouterComplement();
+                    listerComplementsActifs();
                     break;
                 case 4:
-                    modifierComplement();
-                    break;
-                case 5:
-                    archiverComplement();
-                    break;
-                case 6:
-                    supprimerComplement();
-                    break;
-                case 7:
-                    rechercherComplement();
-                    break;
-                case 8:
                     listerBoissons();
                     break;
-                case 9:
+                case 5:
                     listerFrites();
                     break;
-                case 10:
-                    listerSauces();
+                case 6:
+                    modifierComplement();
+                    break;
+                case 7:
+                    archiverComplement();
+                    break;
+                case 8:
+                    supprimerComplement();
                     break;
                 case 0:
                     continuer = false;
                     break;
                 default:
-                    afficherLigne("Choix invalide!");
+                    afficherErreur("Choix invalide");
+            }
+
+            if (continuer && choix != 0) {
+                pause();
             }
         }
     }
 
-    private void listerTousComplements() {
-        List<Complement> complements = complementService.getAllComplements();
-        afficherTitre("LISTE DES COMPLÉMENTS (" + complements.size() + ")");
+    private void afficherMenuComplement() {
+        afficherTitre("GESTION DES COMPLÉMENTS");
+        System.out.println("1. Créer un complément");
+        System.out.println("2. Lister tous les compléments");
+        System.out.println("3. Lister les compléments actifs");
+        System.out.println("4. Lister les boissons");
+        System.out.println("5. Lister les frites");
+        System.out.println("6. Modifier un complément");
+        System.out.println("7. Archiver un complément");
+        System.out.println("8. Supprimer un complément");
+        System.out.println("0. Retour");
+        afficherSeparateur();
+    }
 
-        if (complements.isEmpty()) {
-            afficherLigne("Aucun complément trouvé.");
+    private void creerComplement() {
+        afficherTitre("CRÉER UN COMPLÉMENT");
+
+        String nom = lireChaine("Nom du complément");
+        if (nom.isEmpty()) {
+            afficherErreur("Le nom est obligatoire");
             return;
         }
 
-        for (Complement complement : complements) {
-            afficherLigne(formatComplement(complement));
-        }
-    }
-
-    private void listerParType() {
-        afficherTitre("LISTE PAR TYPE DE COMPLÉMENT");
-        System.out.println("Types disponibles:");
-        for (TypeComplement type : TypeComplement.values()) {
-            System.out.println("- " + type);
+        Double prix = lireDouble("Prix (FCFA)");
+        if (prix == null || prix <= 0) {
+            afficherErreur("Le prix doit être supérieur à 0");
+            return;
         }
 
-        String typeStr = lireString("Type à afficher: ").toUpperCase();
-        try {
-            TypeComplement type = TypeComplement.valueOf(typeStr);
-            List<Complement> complements = complementService.getByType(type);
+        System.out.println("\nType de complément:");
+        System.out.println("1. Boisson");
+        System.out.println("2. Frites");
+        System.out.println("3. Autre");
 
-            afficherTitre("COMPLÉMENTS DE TYPE " + type + " (" + complements.size() + ")");
+        Integer typeChoix = lireEntier("Sélectionnez le type");
+        Complement.TypeComplement type;
 
-            if (complements.isEmpty()) {
-                afficherLigne("Aucun complément de ce type.");
+        switch (typeChoix) {
+            case 1:
+                type = Complement.TypeComplement.BOISSON;
+                break;
+            case 2:
+                type = Complement.TypeComplement.FRITE;
+                break;
+            case 3:
+                type = Complement.TypeComplement.AUTRE;
+                break;
+            default:
+                afficherErreur("Type invalide");
+                return;
+        }
+
+        boolean avecImage = confirmer("Voulez-vous ajouter une image ?");
+
+        Complement complement;
+        if (avecImage) {
+            String cheminImage = lireChaine("Chemin complet de l'image");
+            File imageFile = new File(cheminImage);
+
+            if (!imageFile.exists()) {
+                afficherErreur("Fichier image introuvable");
                 return;
             }
 
-            for (Complement complement : complements) {
-                afficherLigne(formatComplement(complement));
-            }
-        } catch (IllegalArgumentException e) {
-            afficherLigne("❌ Type invalide!");
+            complement = complementService.creerComplementAvecImage(nom, prix, type, imageFile);
+        } else {
+            complement = complementService.creerComplement(nom, prix, type);
+        }
+
+        if (complement != null) {
+            afficherSucces("Complément créé avec succès (ID: " + complement.getId() + ")");
+            afficherDetailsComplement(complement);
+        } else {
+            afficherErreur("Échec de la création du complément");
         }
     }
 
-    private void ajouterComplement() {
-        afficherTitre("AJOUT D'UN NOUVEAU COMPLÉMENT");
+    private void listerComplements() {
+        afficherTitre("LISTE DE TOUS LES COMPLÉMENTS");
 
-        String nom = lireString("Nom: ");
-        double prix = lireDouble("Prix (FCFA): ");
-        String description = lireString("Description: ");
+        List<Complement> complements = complementService.listerComplements();
 
-        // Choix du type
-        afficherLigne("\nTypes disponibles:");
-        TypeComplement[] types = TypeComplement.values();
-        for (int i = 0; i < types.length; i++) {
-            afficherLigne((i + 1) + ". " + types[i]);
-        }
-
-        int choixType = lireChoix("Type (1-" + types.length + "): ");
-        if (choixType < 1 || choixType > types.length) {
-            afficherLigne("Choix invalide!");
+        if (complements.isEmpty()) {
+            afficherMessage("Aucun complément trouvé");
             return;
         }
-        TypeComplement type = types[choixType - 1];
 
-        // Taille (seulement pour boissons et frites)
-        String taille = null;
-        /*
-        if (type == TypeComplement.BOISSON || type == TypeComplement.FRITE) {
-            afficherLigne("\nTailles disponibles:");
-            afficherLigne("1. PETITE");
-            afficherLigne("2. MOYENNE");
-            afficherLigne("3. GRANDE");
-            int choixTaille = lireChoix("Taille (1-3): ");
-            switch (choixTaille) {
-                case 1: taille = "PETITE"; break;
-                case 2: taille = "MOYENNE"; break;
-                case 3: taille = "GRANDE"; break;
-                default: taille = "MOYENNE";
-            }
-        }*/
+        afficherListeComplements(complements);
+    }
 
-        try {
-            Complement complement = complementService.creerComplement(nom, prix, description, type, taille);
-            afficherLigne("✅ Complément créé avec succès!");
-            afficherLigne(formatComplementDetail(complement));
-        } catch (Exception e) {
-            afficherLigne("❌ Erreur lors de la création: " + e.getMessage());
+    private void listerComplementsActifs() {
+        afficherTitre("LISTE DES COMPLÉMENTS ACTIFS");
+
+        List<Complement> complements = complementService.listerComplementsActifs();
+
+        if (complements.isEmpty()) {
+            afficherMessage("Aucun complément actif trouvé");
+            return;
         }
+
+        afficherListeComplements(complements);
+    }
+
+    private void listerBoissons() {
+        afficherTitre("LISTE DES BOISSONS");
+
+        List<Complement> complements = complementService.listerBoissons();
+
+        if (complements.isEmpty()) {
+            afficherMessage("Aucune boisson trouvée");
+            return;
+        }
+
+        afficherListeComplements(complements);
+    }
+
+    private void listerFrites() {
+        afficherTitre("LISTE DES FRITES");
+
+        List<Complement> complements = complementService.listerFrites();
+
+        if (complements.isEmpty()) {
+            afficherMessage("Aucune frite trouvée");
+            return;
+        }
+
+        afficherListeComplements(complements);
+    }
+
+    private void afficherListeComplements(List<Complement> complements) {
+        System.out.println(String.format("\n%-5s %-30s %-15s %-15s %-15s",
+                "ID", "Nom", "Type", "Prix (FCFA)", "Statut"));
+        afficherSeparateur();
+
+        for (Complement complement : complements) {
+            System.out.println(String.format("%-5d %-30s %-15s %-15.2f %-15s",
+                    complement.getId(),
+                    complement.getNom(),
+                    complement.getTypeComplement(),
+                    complement.getPrix(),
+                    complement.getStatutArchivage()));
+        }
+
+        System.out.println("\nTotal: " + complements.size() + " complément(s)");
+    }
+
+    private void afficherDetailsComplement(Complement complement) {
+        System.out.println("\n--- Détails du Complément ---");
+        System.out.println("ID: " + complement.getId());
+        System.out.println("Nom: " + complement.getNom());
+        System.out.println("Type: " + complement.getTypeComplement());
+        System.out.println("Prix: " + complement.getPrix() + " FCFA");
+        System.out.println("Image URL: " + (complement.getImageUrl() != null ? complement.getImageUrl() : "Aucune image"));
+        System.out.println("Statut: " + complement.getStatutArchivage());
+        System.out.println("Date création: " + complement.getDateCreation());
     }
 
     private void modifierComplement() {
-        afficherTitre("MODIFICATION D'UN COMPLÉMENT");
+        afficherTitre("MODIFIER UN COMPLÉMENT");
 
-        int id = lireChoix("ID du complément à modifier: ");
+        Integer id = lireEntier("ID du complément à modifier");
+        if (id == null) {
+            afficherErreur("ID invalide");
+            return;
+        }
 
-        try {
-            Complement complement = complementService.getComplementById(id);
-            afficherLigne("Complément actuel:");
-            afficherLigne(formatComplementDetail(complement));
+        Complement complement = complementService.obtenirComplement(id);
+        if (complement == null) {
+            afficherErreur("Complément introuvable");
+            return;
+        }
 
-            String nom = lireString("\nNouveau nom (laisser vide pour garder '" + complement.getNom() + "'): ");
-            String prixStr = lireString("Nouveau prix (laisser vide pour garder " + complement.getPrix() + "): ");
-            String description = lireString("Nouvelle description (laisser vide pour garder): ");
+        afficherDetailsComplement(complement);
+        System.out.println("\n(Laissez vide pour conserver la valeur actuelle)");
 
-            // Modification du type
-            afficherLigne("\nChanger le type?");
-            String changerType = lireString("(oui/non): ");
-            TypeComplement type = complement.getTypeComplement();
-            String taille = complement.getTaille();
+        String nom = lireChaine("Nouveau nom");
+        Double prix = lireDouble("Nouveau prix (FCFA)");
 
-            if (changerType.equalsIgnoreCase("oui")) {
-                afficherLigne("Types disponibles:");
-                TypeComplement[] types = TypeComplement.values();
-                for (int i = 0; i < types.length; i++) {
-                    afficherLigne((i + 1) + ". " + types[i]);
-                }
-                int choixType = lireChoix("Nouveau type (1-" + types.length + "): ");
-                if (choixType >= 1 && choixType <= types.length) {
-                    type = types[choixType - 1];
+        System.out.println("\nNouveau type (0 pour conserver):");
+        System.out.println("1. Boisson");
+        System.out.println("2. Frites");
+        System.out.println("3. Autre");
 
-                    // Redemander la taille si nécessaire
-                    /*
-                    if (type == TypeComplement.BOISSON || type == TypeComplement.FRITE) {
-                        afficherLigne("\nTailles disponibles:");
-                        afficherLigne("1. PETITE");
-                        afficherLigne("2. MOYENNE");
-                        afficherLigne("3. GRANDE");
-                        int choixTaille = lireChoix("Taille (1-3): ");
-                        switch (choixTaille) {
-                            case 1: taille = "PETITE"; break;
-                            case 2: taille = "MOYENNE"; break;
-                            case 3: taille = "GRANDE"; break;
-                            default: taille = "MOYENNE";
-                        }
-                    } else {
-                        taille = null;
-                    }*/
+        Integer typeChoix = lireEntier("Sélectionnez le type");
+        Complement.TypeComplement type = null;
+
+        if (typeChoix != null && typeChoix != 0) {
+            switch (typeChoix) {
+                case 1:
+                    type = Complement.TypeComplement.BOISSON;
+                    break;
+                case 2:
+                    type = Complement.TypeComplement.FRITE;
+                    break;
+                case 3:
+                    type = Complement.TypeComplement.AUTRE;
+                    break;
+            }
+        }
+
+        Complement modifie = complementService.modifierComplement(id,
+                nom.isEmpty() ? null : nom,
+                prix,
+                type);
+
+        if (modifie != null) {
+            afficherSucces("Complément modifié avec succès");
+
+            if (confirmer("Voulez-vous modifier l'image ?")) {
+                String cheminImage = lireChaine("Chemin complet de la nouvelle image");
+                File imageFile = new File(cheminImage);
+
+                if (imageFile.exists()) {
+                    if (complementService.modifierImageComplement(id, imageFile)) {
+                        afficherSucces("Image modifiée avec succès");
+                    }
                 }
             }
-
-            // Appliquer les modifications
-            if (!nom.isEmpty()) complement.setNom(nom);
-            if (!prixStr.isEmpty()) complement.setPrix(Double.parseDouble(prixStr));
-            if (!description.isEmpty()) complement.setDescription(description);
-            complement.setTypeComplement(type);
-            complement.setTaille(taille);
-
-            Complement complementModifie = complementService.modifierComplement(
-                    id,
-                    complement.getNom(),
-                    complement.getPrix(),
-                    complement.getDescription(),
-                    type,
-                    taille
-            );
-
-            afficherLigne("✅ Complément modifié avec succès!");
-            afficherLigne(formatComplementDetail(complementModifie));
-
-        } catch (Exception e) {
-            afficherLigne("❌ Erreur lors de la modification: " + e.getMessage());
         }
     }
 
     private void archiverComplement() {
-        afficherTitre("ARCHIVAGE D'UN COMPLÉMENT");
+        afficherTitre("ARCHIVER UN COMPLÉMENT");
 
-        int id = lireChoix("ID du complément à archiver: ");
+        Integer id = lireEntier("ID du complément à archiver");
+        if (id == null) {
+            afficherErreur("ID invalide");
+            return;
+        }
 
-        try {
-            complementService.archiverComplement(id);
-            afficherLigne("✅ Complément archivé avec succès!");
-        } catch (Exception e) {
-            afficherLigne("❌ Erreur lors de l'archivage: " + e.getMessage());
+        Complement complement = complementService.obtenirComplement(id);
+        if (complement == null) {
+            afficherErreur("Complément introuvable");
+            return;
+        }
+
+        afficherDetailsComplement(complement);
+
+        if (confirmer("\nConfirmez-vous l'archivage de ce complément ?")) {
+            if (complementService.archiverComplement(id)) {
+                afficherSucces("Complément archivé avec succès");
+            } else {
+                afficherErreur("Échec de l'archivage");
+            }
         }
     }
 
     private void supprimerComplement() {
-        afficherTitre("SUPPRESSION D'UN COMPLÉMENT");
+        afficherTitre("SUPPRIMER UN COMPLÉMENT");
 
-        int id = lireChoix("ID du complément à supprimer: ");
+        Integer id = lireEntier("ID du complément à supprimer");
+        if (id == null) {
+            afficherErreur("ID invalide");
+            return;
+        }
 
-        try {
-            Complement complement = complementService.getComplementById(id);
-            afficherLigne("Complément à supprimer: " + complement.getNom());
-            String confirmation = lireString("Êtes-vous sûr? (oui/non): ");
+        Complement complement = complementService.obtenirComplement(id);
+        if (complement == null) {
+            afficherErreur("Complément introuvable");
+            return;
+        }
 
-            if (confirmation.equalsIgnoreCase("oui")) {
-                boolean success = complementService.supprimerComplement(id);
-                if (success) {
-                    afficherLigne("✅ Complément supprimé avec succès!");
-                } else {
-                    afficherLigne("❌ Erreur lors de la suppression.");
-                }
+        afficherDetailsComplement(complement);
+
+        System.out.println("\n⚠️  ATTENTION: Cette action est irréversible!");
+        if (confirmer("Confirmez-vous la suppression définitive de ce complément ?")) {
+            if (complementService.supprimerComplement(id)) {
+                afficherSucces("Complément supprimé avec succès");
             } else {
-                afficherLigne("Suppression annulée.");
+                afficherErreur("Échec de la suppression");
             }
-        } catch (Exception e) {
-            afficherLigne("❌ Erreur: " + e.getMessage());
         }
-    }
-
-    private void rechercherComplement() {
-        afficherTitre("RECHERCHE DE COMPLÉMENT");
-
-        String recherche = lireString("Nom à rechercher: ");
-        List<Complement> complements = complementService.rechercherComplements(recherche);
-
-        afficherTitre("RÉSULTATS (" + complements.size() + ")");
-
-        if (complements.isEmpty()) {
-            afficherLigne("Aucun complément trouvé.");
-            return;
-        }
-
-        for (Complement complement : complements) {
-            afficherLigne(formatComplement(complement));
-        }
-    }
-
-    private void listerBoissons() {
-        List<Complement> boissons = complementService.getBoissons();
-        afficherTitre("BOISSONS DISPONIBLES (" + boissons.size() + ")");
-
-        if (boissons.isEmpty()) {
-            afficherLigne("Aucune boisson disponible.");
-            return;
-        }
-
-        for (Complement boisson : boissons) {
-            afficherLigne(formatComplementDetail(boisson));
-        }
-    }
-
-    private void listerFrites() {
-        List<Complement> frites = complementService.getFrites();
-        afficherTitre("FRITES DISPONIBLES (" + frites.size() + ")");
-
-        if (frites.isEmpty()) {
-            afficherLigne("Aucune frite disponible.");
-            return;
-        }
-
-        for (Complement frite : frites) {
-            afficherLigne(formatComplementDetail(frite));
-        }
-    }
-
-    private void listerSauces() {
-        List<Complement> sauces = complementService.getByType(TypeComplement.SAUCE);
-        afficherTitre("SAUCES DISPONIBLES (" + sauces.size() + ")");
-
-        if (sauces.isEmpty()) {
-            afficherLigne("Aucune sauce disponible.");
-            return;
-        }
-
-        for (Complement sauce : sauces) {
-            afficherLigne(formatComplementDetail(sauce));
-        }
-    }
-
-    private String formatComplement(Complement complement) {
-        return String.format("ID: %d | %s | %.0f FCFA | %s | %s",
-                complement.getId(),
-                complement.getNom(),
-                complement.getPrix(),
-                complement.getTypeComplement(),
-                complement.isEstArchive() ? "[ARCHIVÉ]" : "[ACTIF]"
-        );
-    }
-
-    private String formatComplementDetail(Complement complement) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("- ").append(complement.getNom())
-                .append(" (").append(complement.getTypeComplement()).append(")")
-                .append(" - ").append(complement.getPrix()).append(" FCFA");
-
-        if (complement.getTaille() != null) {
-            sb.append(" - Taille: ").append(complement.getTaille());
-        }
-
-        if (complement.getDescription() != null && !complement.getDescription().isEmpty()) {
-            sb.append("\n  Description: ").append(complement.getDescription());
-        }
-
-        if (complement.isEstArchive()) {
-            sb.append(" [ARCHIVÉ]");
-        }
-
-        return sb.toString();
     }
 }

@@ -1,45 +1,41 @@
-package org.example.Vue;
+// Fichier: src/main/java/org/example/vue/BurgerVue.java
+package org.example.vue;
 
-import org.example.Model.Burger;
-import org.example.Service.BurgerService;
-import org.example.config.factory.service.ServiceFactory;
+import org.example.model.Burger;
+import org.example.service.BurgerService;
+
+import java.io.File;
 import java.util.List;
 
 public class BurgerVue extends Vue {
-
     private final BurgerService burgerService;
 
     public BurgerVue() {
-        this.burgerService = ServiceFactory.getBurgerService();
+        super();
+        this.burgerService = new BurgerService();
     }
 
-    public void afficherMenuBurger() {
+    @Override
+    public void afficher() {
         boolean continuer = true;
 
         while (continuer) {
-            afficherTitre("GESTION DES BURGERS");
-            String[] options = {
-                    "Lister tous les burgers",
-                    "Lister les burgers actifs",
-                    "Ajouter un burger",
-                    "Modifier un burger",
-                    "Archiver un burger",
-                    "Supprimer un burger",
-                    "Rechercher un burger"
-            };
-            afficherMenu(options);
+            afficherMenuBurger();
+            Integer choix = lireEntier("\nVotre choix");
 
-            int choix = lireChoix("\nVotre choix: ");
+            if (choix == null) {
+                continue;
+            }
 
             switch (choix) {
                 case 1:
-                    listerTousBurgers();
+                    creerBurger();
                     break;
                 case 2:
-                    listerBurgersActifs();
+                    listerBurgers();
                     break;
                 case 3:
-                    ajouterBurger();
+                    listerBurgersActifs();
                     break;
                 case 4:
                     modifierBurger();
@@ -50,146 +46,218 @@ public class BurgerVue extends Vue {
                 case 6:
                     supprimerBurger();
                     break;
-                case 7:
-                    rechercherBurger();
-                    break;
                 case 0:
                     continuer = false;
                     break;
                 default:
-                    afficherLigne("Choix invalide!");
+                    afficherErreur("Choix invalide");
+            }
+
+            if (continuer && choix != 0) {
+                pause();
             }
         }
     }
 
-    private void listerTousBurgers() {
-        List<Burger> burgers = burgerService.getAllBurgers();
-        afficherTitre("LISTE DES BURGERS (" + burgers.size() + ")");
+    private void afficherMenuBurger() {
+        afficherTitre("GESTION DES BURGERS");
+        System.out.println("1. Créer un burger");
+        System.out.println("2. Lister tous les burgers");
+        System.out.println("3. Lister les burgers actifs");
+        System.out.println("4. Modifier un burger");
+        System.out.println("5. Archiver un burger");
+        System.out.println("6. Supprimer un burger");
+        System.out.println("0. Retour");
+        afficherSeparateur();
+    }
 
-        if (burgers.isEmpty()) {
-            afficherLigne("Aucun burger trouvé.");
+    private void creerBurger() {
+        afficherTitre("CRÉER UN BURGER");
+
+        String nom = lireChaine("Nom du burger");
+        if (nom.isEmpty()) {
+            afficherErreur("Le nom est obligatoire");
             return;
         }
 
-        for (Burger burger : burgers) {
-            afficherLigne(formatBurger(burger));
+        Double prix = lireDouble("Prix (FCFA)");
+        if (prix == null || prix <= 0) {
+            afficherErreur("Le prix doit être supérieur à 0");
+            return;
         }
+
+        String description = lireChaine("Description (optionnel)");
+
+        boolean avecImage = confirmer("Voulez-vous ajouter une image ?");
+
+        Burger burger;
+        if (avecImage) {
+            String cheminImage = lireChaine("Chemin complet de l'image");
+            File imageFile = new File(cheminImage);
+
+            if (!imageFile.exists()) {
+                afficherErreur("Fichier image introuvable");
+                return;
+            }
+
+            burger = burgerService.creerBurgerAvecImage(nom, prix, description, imageFile);
+        } else {
+            burger = burgerService.creerBurger(nom, prix, description);
+        }
+
+        if (burger != null) {
+            afficherSucces("Burger créé avec succès (ID: " + burger.getId() + ")");
+            afficherDetailsBurger(burger);
+        } else {
+            afficherErreur("Échec de la création du burger");
+        }
+    }
+
+    private void listerBurgers() {
+        afficherTitre("LISTE DE TOUS LES BURGERS");
+
+        List<Burger> burgers = burgerService.listerBurgers();
+
+        if (burgers.isEmpty()) {
+            afficherMessage("Aucun burger trouvé");
+            return;
+        }
+
+        afficherListeBurgers(burgers);
     }
 
     private void listerBurgersActifs() {
-        List<Burger> burgers = burgerService.getBurgersActifs();
-        afficherTitre("BURGERS ACTIFS (" + burgers.size() + ")");
+        afficherTitre("LISTE DES BURGERS ACTIFS");
+
+        List<Burger> burgers = burgerService.listerBurgersActifs();
 
         if (burgers.isEmpty()) {
-            afficherLigne("Aucun burger actif trouvé.");
+            afficherMessage("Aucun burger actif trouvé");
             return;
         }
 
-        for (Burger burger : burgers) {
-            afficherLigne(formatBurger(burger));
-        }
+        afficherListeBurgers(burgers);
     }
 
-    private void ajouterBurger() {
-        afficherTitre("AJOUT D'UN NOUVEAU BURGER");
+    private void afficherListeBurgers(List<Burger> burgers) {
+        System.out.println(String.format("\n%-5s %-30s %-15s %-15s", "ID", "Nom", "Prix (FCFA)", "Statut"));
+        afficherSeparateur();
 
-        String nom = lireString("Nom du burger: ");
-        double prix = lireDouble("Prix (FCFA): ");
-        String description = lireString("Description: ");
-
-        try {
-            Burger burger = burgerService.creerBurger(nom, prix, description);
-            afficherLigne("✅ Burger créé avec succès!");
-            afficherLigne(formatBurger(burger));
-        } catch (Exception e) {
-            afficherLigne("❌ Erreur lors de la création: " + e.getMessage());
+        for (Burger burger : burgers) {
+            System.out.println(String.format("%-5d %-30s %-15.2f %-15s",
+                    burger.getId(),
+                    burger.getNom(),
+                    burger.getPrix(),
+                    burger.getStatutArchivage()));
         }
+
+        System.out.println("\nTotal: " + burgers.size() + " burger(s)");
+    }
+
+    private void afficherDetailsBurger(Burger burger) {
+        System.out.println("\n--- Détails du Burger ---");
+        System.out.println("ID: " + burger.getId());
+        System.out.println("Nom: " + burger.getNom());
+        System.out.println("Prix: " + burger.getPrix() + " FCFA");
+        System.out.println("Description: " + (burger.getDescription() != null ? burger.getDescription() : "N/A"));
+        System.out.println("Image URL: " + (burger.getImageUrl() != null ? burger.getImageUrl() : "Aucune image"));
+        System.out.println("Statut: " + burger.getStatutArchivage());
+        System.out.println("Date création: " + burger.getDateCreation());
     }
 
     private void modifierBurger() {
-        afficherTitre("MODIFICATION D'UN BURGER");
+        afficherTitre("MODIFIER UN BURGER");
 
-        int id = lireChoix("ID du burger à modifier: ");
+        Integer id = lireEntier("ID du burger à modifier");
+        if (id == null) {
+            afficherErreur("ID invalide");
+            return;
+        }
 
-        try {
-            Burger burger = burgerService.getBurgerById(id);
-            afficherLigne("Burger actuel: " + formatBurger(burger));
+        Burger burger = burgerService.obtenirBurger(id);
+        if (burger == null) {
+            afficherErreur("Burger introuvable");
+            return;
+        }
 
-            String nom = lireString("Nouveau nom (laisser vide pour garder '" + burger.getNom() + "'): ");
-            String prixStr = lireString("Nouveau prix (laisser vide pour garder " + burger.getPrix() + "): ");
-            String description = lireString("Nouvelle description (laisser vide pour garder): ");
+        afficherDetailsBurger(burger);
+        System.out.println("\n(Laissez vide pour conserver la valeur actuelle)");
 
-            if (!nom.isEmpty()) burger.setNom(nom);
-            if (!prixStr.isEmpty()) burger.setPrix(Double.parseDouble(prixStr));
-            if (!description.isEmpty()) burger.setDescription(description);
+        String nom = lireChaine("Nouveau nom");
+        Double prix = lireDouble("Nouveau prix (FCFA)");
+        String description = lireChaine("Nouvelle description");
 
-            burgerService.modifierBurger(id, burger.getNom(), burger.getPrix(), burger.getDescription());
-            afficherLigne("✅ Burger modifié avec succès!");
-        } catch (Exception e) {
-            afficherLigne("❌ Erreur lors de la modification: " + e.getMessage());
+        Burger modifie = burgerService.modifierBurger(id,
+                nom.isEmpty() ? null : nom,
+                prix,
+                description.isEmpty() ? null : description);
+
+        if (modifie != null) {
+            afficherSucces("Burger modifié avec succès");
+
+            if (confirmer("Voulez-vous modifier l'image ?")) {
+                String cheminImage = lireChaine("Chemin complet de la nouvelle image");
+                File imageFile = new File(cheminImage);
+
+                if (imageFile.exists()) {
+                    if (burgerService.modifierImageBurger(id, imageFile)) {
+                        afficherSucces("Image modifiée avec succès");
+                    }
+                }
+            }
         }
     }
 
     private void archiverBurger() {
-        afficherTitre("ARCHIVAGE D'UN BURGER");
+        afficherTitre("ARCHIVER UN BURGER");
 
-        int id = lireChoix("ID du burger à archiver: ");
+        Integer id = lireEntier("ID du burger à archiver");
+        if (id == null) {
+            afficherErreur("ID invalide");
+            return;
+        }
 
-        try {
-            burgerService.archiverBurger(id);
-            afficherLigne("✅ Burger archivé avec succès!");
-        } catch (Exception e) {
-            afficherLigne("❌ Erreur lors de l'archivage: " + e.getMessage());
+        Burger burger = burgerService.obtenirBurger(id);
+        if (burger == null) {
+            afficherErreur("Burger introuvable");
+            return;
+        }
+
+        afficherDetailsBurger(burger);
+
+        if (confirmer("\nConfirmez-vous l'archivage de ce burger ?")) {
+            if (burgerService.archiverBurger(id)) {
+                afficherSucces("Burger archivé avec succès");
+            } else {
+                afficherErreur("Échec de l'archivage");
+            }
         }
     }
 
     private void supprimerBurger() {
-        afficherTitre("SUPPRESSION D'UN BURGER");
+        afficherTitre("SUPPRIMER UN BURGER");
 
-        int id = lireChoix("ID du burger à supprimer: ");
-        String confirmation = lireString("Êtes-vous sûr? (oui/non): ");
-
-        if (confirmation.equalsIgnoreCase("oui")) {
-            try {
-                boolean success = burgerService.supprimerBurger(id);
-                if (success) {
-                    afficherLigne("✅ Burger supprimé avec succès!");
-                } else {
-                    afficherLigne("❌ Erreur lors de la suppression.");
-                }
-            } catch (Exception e) {
-                afficherLigne("❌ Erreur: " + e.getMessage());
-            }
-        } else {
-            afficherLigne("Suppression annulée.");
-        }
-    }
-
-    private void rechercherBurger() {
-        afficherTitre("RECHERCHE DE BURGER");
-
-        String recherche = lireString("Nom à rechercher: ");
-        List<Burger> burgers = burgerService.rechercherBurgers(recherche);
-
-        afficherTitre("RÉSULTATS (" + burgers.size() + ")");
-
-        if (burgers.isEmpty()) {
-            afficherLigne("Aucun burger trouvé.");
+        Integer id = lireEntier("ID du burger à supprimer");
+        if (id == null) {
+            afficherErreur("ID invalide");
             return;
         }
 
-        for (Burger burger : burgers) {
-            afficherLigne(formatBurger(burger));
+        Burger burger = burgerService.obtenirBurger(id);
+        if (burger == null) {
+            afficherErreur("Burger introuvable");
+            return;
         }
-    }
 
-    private String formatBurger(Burger burger) {
-        return String.format("ID: %d | %s | %.0f FCFA | %s | %s",
-                burger.getId(),
-                burger.getNom(),
-                burger.getPrix(),
-                burger.getDescription(),
-                burger.isEstArchive() ? "[ARCHIVÉ]" : "[ACTIF]"
-        );
+        afficherDetailsBurger(burger);
+
+        System.out.println("\n⚠️  ATTENTION: Cette action est irréversible!");
+        if (confirmer("Confirmez-vous la suppression définitive de ce burger ?")) {
+            if (burgerService.supprimerBurger(id)) {
+                afficherSucces("Burger supprimé avec succès");
+            } else {
+                afficherErreur("Échec de la suppression");
+            }
+        }
     }
 }

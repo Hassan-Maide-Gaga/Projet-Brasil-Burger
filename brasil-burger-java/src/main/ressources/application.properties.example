@@ -1,0 +1,40 @@
+# Fichier: src/main/resources/application.properties.example
+# Copiez ce fichier en 'application.properties' et remplissez avec vos credentials
+
+# ========================================
+# Configuration Neon PostgreSQL
+# ========================================
+# Obtenez vos credentials sur: https://neon.tech
+db.url=jdbc:postgresql://your-neon-instance.neon.tech:5432/brasil_burger_db
+db.username=postgresql://neondb_owner:npg_qcVpO4vRtU8l@ep-ancient-sunset-adjt4xrg-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+db.password=npg_qcVpO4vRtU8l
+db.driver=org.postgresql.Driver
+# ========================================
+# Configuration Cloudinary
+# ========================================
+# Obtenez vos credentials sur: https://cloudinary.com/console
+cloudinary.cloud_name=drynxwp0h
+cloudinary.api_key=118422941322141
+cloudinary.api_secret=jfROTFudw-cFwHrZdqDis2C9wD8
+
+
+# ========================================
+# Configuration des dossiers Cloudinary
+# ========================================
+cloudinary.folder.burger=brasil_burger/burgers
+cloudinary.folder.menu=brasil_burger/menus
+cloudinary.folder.complement=brasil_burger/complements
+
+# ========================================
+# Configuration de l'application
+# ========================================
+app.name=Brasil Burger
+app.version=1.0.0
+
+# ========================================
+# Instructions
+# ========================================
+# 1. Copiez ce fichier et renommez-le 'application.properties'
+# 2. Remplacez les valeurs 'your_*' par vos vraies credentials
+# 3. Ne commitez JAMAIS le fichier application.properties avec vos vraies credentials
+# 4. Ajoutez application.properties dans votre .gitignore
