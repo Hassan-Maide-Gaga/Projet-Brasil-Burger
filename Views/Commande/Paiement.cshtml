@@ -1,0 +1,102 @@
+@model brasilBurger.Models.PaiementVM
+@{
+    ViewData["Title"] = "Paiement - Brasil Burger";
+}
+<div class="container mt-5 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Paiement de la commande</h2>
+        <a asp-controller="Catalogue" asp-action="Index" class="btn btn-danger">
+            <i class="fas fa-arrow-left me-2"></i>Retour
+        </a>
+    </div>
+    <div class="row g-4 d-flex align-items-stretch">
+        <div class="col-lg-4 d-flex">
+            <div class="card border-0 shadow-sm p-4 w-100 h-100">
+                <h5 class="mb-3 fw-bold">Résumé de la commande</h5>
+                <p><strong>Produit :</strong> @Model.NomProduit</p>
+                <p><strong>Quantité :</strong> @Model.Quantite</p>
+                <p><strong>Compléments :</strong>
+                    @if (Model.Complements != null && Model.Complements.Count > 0)
+                    {
+                        <ul class="list-unstyled mb-0 ps-2">
+                            @foreach(var c in Model.Complements)
+                            {
+                                <li>@c.Nom - @c.Prix FCFA</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <span>Aucun complément</span>
+                    }
+                </p>
+                <p><strong>Total à payer :</strong> <span class="text-success fw-bold">@Model.Total FCFA</span></p>
+            </div>
+        </div>
+        <div class="col-lg-8 d-flex">
+            <div class="card border-0 shadow-sm p-5 w-100 h-100">
+                <form asp-controller="Paiement" asp-action="Payer" method="post">
+                    <input type="hidden" name="ProduitId" value="@Model.ProduitId" />
+                    <input type="hidden" name="Type" value="@Model.Type" />
+                    <input type="hidden" name="Quantite" value="@Model.Quantite" />
+                    @foreach(var cId in Model.ComplementIds)
+                    {
+                        <input type="hidden" name="SelectedComplements" value="@cId" />
+                    }
+                    <div class="mb-3">
+                        <label class="form-label">Téléphone</label>
+                        <input type="text" name="Telephone" class="form-control w-75" value=@ViewBag.Client.Telephone required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Type de commande</label>
+                        <select class="form-select w-75" name="TypeCmd" id="typeCmdSelect" required>
+                            <option value="">Choisir le type de la commande</option>
+                            <option value="SUR_PLACE">Sur place</option>
+                            <option value="A_RECUPERER">A recuperer</option>
+                            <option value="LIVRAISON">Livraison</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="zoneSelectContainer" style="display:none;">
+                        <label class="form-label">Zone de livraison</label>
+                        <select class="form-select w-75" name="ZoneId">
+                            <option value="">Choisir Zone</option>
+                            @foreach(var zone in ViewBag.Zones)
+                            {
+                                <option value="@zone.Id">@zone.Nom - @zone.PrixLivraison FCFA</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mode de paiement</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ModePaiement" id="wave" value="WAVE" required>
+                            <label class="form-check-label" for="wave">Wave</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ModePaiement" id="omoney" value="OM">
+                            <label class="form-check-label" for="omoney">Orange Money</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-orange w-50">
+                        Payer maintenant
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const typeCmdSelect = document.getElementById('typeCmdSelect');
+    const zoneContainer = document.getElementById('zoneSelectContainer');
+
+    typeCmdSelect.addEventListener('change', function() {
+        if (this.value === "LIVRAISON") { 
+            zoneContainer.style.display = "block";
+        } else {
+            zoneContainer.style.display = "none";
+        }
+    });
+</script>
+}

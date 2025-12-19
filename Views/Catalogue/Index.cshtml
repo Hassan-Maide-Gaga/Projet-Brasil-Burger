@@ -1,0 +1,64 @@
+@{
+    ViewData["Title"] = "Catalogue";
+}
+@model IEnumerable<CatalogueItemVM>
+
+<body class="">
+    <section class="py-4">
+        <div class="container">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-12 col-md-5">
+                    <label class="form-label">Type de produit</label>
+                    <select name="type" class="form-select" >
+                        <option value="all" selected="@(ViewBag.SelectedType == "all" ? "selected" : null)">Tous</option>
+                        <option value="burger" selected="@(ViewBag.SelectedType == "burger" ? "selected" : null)">Burger</option>
+                        <option value="menu" selected="@(ViewBag.SelectedType == "menu" ? "selected" : null)">Menu</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-3 d-grid">
+                    <button type="submit" class="btn btn-orange">
+                        <i class="fa fa-filter"></i> Filtrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5 fw-bold">Catalogue</h2>
+            <div class="row g-4">
+                @foreach (var item in Model)
+                {
+                    <div class="col-sm-6 col-md-4 col-lg-3">
+                        <div class="card h-100 shadow-sm">
+                            <img src="@item.Image" class="card-img-top" alt="@item.Nom">
+                            <div class="card-body text-center d-flex flex-column">
+                                <span class="badge @(item.Type == "Menu" ? "badge-bleu" : "badge-vert") mb-2">
+                                    @item.Type
+                                </span>
+                                <h5 class="card-title">@item.Nom</h5>
+                                <p class="fw-bold text-vert">@item.Prix FCFA</p>
+                                <a asp-controller="Catalogue" asp-action="Details" asp-route-id=@item.Id asp-route-type=@item.Type class="btn btn-orange mt-auto">Voir détails</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-5">
+                @{
+                    var currentPage = ViewBag.CurrentPage ?? 1;
+                    var totalPages = ViewBag.TotalPages ?? 1;
+                }
+                @if (currentPage > 1)
+                {
+                    <a href="?page=@(currentPage - 1)&type=@ViewBag.SelectedType" class="btn btn-outline-orange">Précédent</a>
+                }
+                <span>Page @currentPage / @totalPages</span>
+                @if (currentPage < totalPages)
+                {
+                    <a href="?page=@(currentPage + 1)&type=@ViewBag.SelectedType" class="btn btn-outline-orange">Suivant</a>
+                }
+            </div>
+        </div>
+    </section>
+</body>

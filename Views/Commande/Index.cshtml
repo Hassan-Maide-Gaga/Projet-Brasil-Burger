@@ -1,0 +1,104 @@
+@{
+    ViewData["Title"] = "Mes Commandes";
+}
+@model IEnumerable<Commande>
+<div class="container mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Mes commandes</h2>
+    </div>
+    <div class="card border-0 mb-4 shadow-sm p-3">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <form method="get">
+                        <select class="form-select" onchange="this.form.submit()" name="etat">
+                            <option value="all" selected="@(ViewBag.SelectedEtat == "all" ? "selected" : null)">Etat</option>
+                            <option value="EN_COURS" selected="@(ViewBag.SelectedEtat == "EN_COURS" ? "selected" : null)">En cours</option>
+                            <option value="TERMINEE" selected="@(ViewBag.SelectedEtat == "TERMINEE" ? "selected" : null)">Terminée</option>
+                            <option value="ANNULEE" selected="@(ViewBag.SelectedEtat == "ANNULEE" ? "selected" : null)">Annulée</option>
+                            <option value="EN_ATTENTE" selected="@(ViewBag.SelectedEtat == "EN_ATTENTE" ? "selected" : null)">En Attente</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="table-responsive text-center">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Produits</th>
+                            <th>Type</th>
+                            <th>Etat</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model == null || !Model.Any())
+                        {
+                            <tr>
+                                <td colspan="7">
+                                    <div class="alert alert-info mb-0">
+                                        Aucune commande trouvée.
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var cmd in Model)
+                            {
+                                <tr>
+                                    <td><strong>@cmd.Id</strong></td>
+                                    <td>
+                                        @(cmd.CommandeItems != null && cmd.CommandeItems.Any()
+                                            ? string.Join(", ", cmd.CommandeItems.Select(i => $"{i.Type}"))
+                                            : "N/A")
+                                    </td>
+                                    <td>@cmd.Type</td>
+                                    <td>
+                                        <span style="width:100%;" class="badge 
+                                            @(cmd.Etat == EtatCommande.EN_COURS ? "status-pending" :
+                                            cmd.Etat == EtatCommande.TERMINEE ? "status-completed" :
+                                            cmd.Etat == EtatCommande.ANNULEE ? "status-cancelled" :
+                                            "status-waiting")">
+                                            @cmd.Etat
+                                        </span>
+                                    </td>
+                                    <td>@cmd.DateCommande.ToString("dd/MM/yyyy")</td>
+                                    <td>@cmd.MontantTotal.ToString("N0") FCFA</td>
+                                    <td class="text-center action-icons">
+                                        <a asp-action="Details" asp-route-id="@cmd.Id"
+                                            class="badge badge-bleu" title="Voir">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-center align-items-center gap-3 mt-5">
+        @{
+            var currentPage = ViewBag.CurrentPage ?? 1;
+            var totalPages = ViewBag.TotalPages ?? 1;
+        }
+        @if (currentPage > 1)
+        {
+            <a href="?page=@(currentPage - 1)&etat=@ViewBag.SelectedEtat" class="btn btn-outline-orange">Précédent</a>
+        }
+        <span>Page @currentPage / @totalPages</span>
+        @if (currentPage < totalPages)
+        {
+            <a href="?page=@(currentPage + 1)&etat=@ViewBag.SelectedEtat" class="btn btn-outline-orange">Suivant</a>
+        }
+    </div>
+</div>

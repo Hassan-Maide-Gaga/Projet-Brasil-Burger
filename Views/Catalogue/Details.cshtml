@@ -1,0 +1,89 @@
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@{
+    ViewData["Title"] = "Détails du Produit";
+}
+@model CatalogueItemVM
+<form asp-action="Commander" asp-controller="Commande" method="post">
+    <input type="hidden" name="ProduitId" value="@Model.Id" />
+    <input type="hidden" name="Type" value="@Model.Type" />
+    <section class="product-section">
+        <div class="container">
+            <div class="product-details">
+                <div class="col-md-6">
+                    <img src="@Model.Image"
+                        alt="@Model.Nom"
+                        class="product-image">
+                </div>
+                <div class="col-md-6 product-info">
+                    <span class="badge @(Model.Type=="Burger" ? "badge-vert" : "badge-bleu") badge-type mb-2">@Model.Type</span>
+                    <h3>@Model.Nom</h3>
+                    <p>
+                        Délicieux burger composé d’un steak de bœuf juteux,
+                        fromage fondant, salade fraîche et sauce maison.
+                    </p>
+                    <h5 class="text-vert ps-3">@Model.Prix FCFA</h5>
+                    <div class="mb-3">
+                        <h4>Compléments</h4>
+                        @if(Model.Type == "Burger"){
+                            <div class="mb-3">
+                                @foreach (var complement in ViewBag.Complements as List<Complement>)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                            type="checkbox"
+                                            name="SelectedComplements"
+                                            value="@complement.Id"
+                                            id="complement_@complement.Id" />
+                                        <label class="form-check-label" for="complement_@complement.Id">
+                                            @complement.Nom - @complement.Prix FCFA
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        }else if(Model.Type == "Menu"){
+                            @foreach (var complement in ViewBag.MenuComplements as List<Complement>)
+                            {   
+                                <div>
+                                    <h5 class="text-vert ps-3">@complement.Nom - @complement.Prix FCFA</h5>
+                                    <input type="hidden" name="SelectedComplements" value="@complement.Id" />
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="quantity mb-4">
+                        <h4>Quantité</h4>
+                        <input type="number" name="_Quantite" class="form-control" min="1" value="1">
+                    </div>
+                    <button type="submit" class="btn btn-orange btn-lg">
+                        <i class="fa fa-cart-plus"></i> Commander
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+</form>
+@if (ViewBag.Similaires != null && (ViewBag.Similaires as List<CatalogueItemVM>).Count > 0)
+    {
+        <section class="product-section">
+            <div class="container">
+                <h3 class="text-center mb-4 fw-bold">Produits similaires</h3>
+                <div class="row g-4 similar-products">
+                    @foreach (var item in ViewBag.Similaires as List<CatalogueItemVM>)
+                    {
+                    <div class="col-sm-6 col-md-4 col-lg-3">
+                        <div class="card h-100 shadow-sm">
+                            <img src="@item.Image"
+                                class="card-img-top" alt="@item.Nom">
+                            <div class="card-body text-center d-flex flex-column">
+                                <span class="badge  @(Model.Type=="Burger" ? "badge-vert" : "badge-bleu") mb-2">@item.Type</span>
+                                <h5 class="card-title">@item.Nom</h5>
+                                <p class="fw-bold text-vert">@item.Prix FCFA</p>
+                                <a asp-controller="Catalogue" asp-action="Details" asp-route-id=@item.Id asp-route-type=@item.Type class="btn btn-orange mt-auto">Voir détails</a>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                </div>
+            </div>
+        </section>
+    }
