@@ -16,7 +16,6 @@ namespace brasilBurger.Controllers
             
         }
         [HttpGet]
-        // GET: /Catalogue/Index 
         public IActionResult Index(int page = 1, string type = "all")
         {
             try
