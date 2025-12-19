@@ -33,6 +33,7 @@ namespace brasilBurger.Services
             return uploadResult.SecureUrl.ToString();
         }
     }
+    
     public class CloudinarySettings
     {
         public string CloudName { get; set; }
