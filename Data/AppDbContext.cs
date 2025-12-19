@@ -23,8 +23,6 @@ namespace brasilBurger.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-        
             
             // User
             modelBuilder.Entity<User>(entity =>
@@ -198,14 +196,10 @@ namespace brasilBurger.Data
                 entity.Ignore(c => c.CreatedAt);
             });
             
-            
             modelBuilder.Entity<MenuComplement>(entity =>
             {
                 entity.ToTable("menu_complement");
-                
-                
                 entity.HasKey(mc => mc.Id);  
-                
                 entity.Property(mc => mc.Id)
                     .HasColumnName("id")
                     .ValueGeneratedOnAdd();
