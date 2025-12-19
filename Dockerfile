@@ -1,29 +1,24 @@
-# Stage 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copier les fichiers du projet
-COPY . ./
+# Copier d'abord uniquement les fichiers projet/solution
+COPY *.sln ./
+COPY brasilBurger.csproj ./
 
 # Restaurer les dépendances
-RUN dotnet restore
+RUN dotnet restore "CSharp.sln"
 
-# Publier l'application en release (framework-dependent)
-RUN dotnet publish -c Release -o /app/publish
+# Copier le reste du code source (exclure le sous-dossier brasilBurger si possible)
+COPY . .
 
-# Stage 2: Runtime
+# Build et publish
+RUN dotnet build "CSharp.sln" -c Release -o /app/build
+RUN dotnet publish "brasilBurger.csproj" -c Release -o /app/publish
+
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
-# Configurer le port pour Render
-ENV PORT=8080
-ENV ASPNETCORE_URLS=http://+:$PORT
-
-# Copier les fichiers publiés
-COPY --from=build /app/publish ./
-
-# Exposer le port
-EXPOSE $PORT
-
-# Lancer l'application (spécifie explicitement le DLL)
-CMD ["dotnet", "brasilBurger.dll"]
+COPY --from=build /app/publish .
+EXPOSE 80
+EXPOSE 443
+ENTRYPOINT ["dotnet", "brasilBurger.dll"]
