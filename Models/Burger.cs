@@ -1,5 +1,6 @@
 namespace brasilBurger.Models
 {
+    
     public class Burger
     {
         public int Id { get; set; }
