@@ -23,7 +23,6 @@ namespace brasilBurger.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            
             // User
             modelBuilder.Entity<User>(entity =>
             {
