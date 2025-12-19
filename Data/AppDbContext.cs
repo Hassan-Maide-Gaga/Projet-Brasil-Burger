@@ -9,8 +9,6 @@ namespace brasilBurger.Data
             : base(options)
         {
         }
-
-       
         public DbSet<User> Users { get; set; }
         public DbSet<Zone> Zones { get; set; }
         public DbSet<Livreur> Livreurs { get; set; }
