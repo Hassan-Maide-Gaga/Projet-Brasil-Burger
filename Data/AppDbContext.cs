@@ -230,8 +230,7 @@ namespace brasilBurger.Data
                 entity.HasIndex(mc => new { mc.MenuId, mc.ComplementId })
                     .IsUnique();
             });
-            
-          
+    
             modelBuilder.Entity<Commande>(entity =>
             {
                 entity.ToTable("commande");
