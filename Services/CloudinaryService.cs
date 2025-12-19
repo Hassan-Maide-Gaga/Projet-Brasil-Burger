@@ -17,7 +17,6 @@ namespace brasilBurger.Services
             );
             _cloudinary = new Cloudinary(account);
         }
-        
         public async Task<string> UploadImageAsync(IFormFile file)
         {
             if (file == null || file.Length == 0)
