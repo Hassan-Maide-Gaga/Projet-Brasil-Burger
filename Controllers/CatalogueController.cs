@@ -34,6 +34,7 @@ namespace brasilBurger.Controllers
                 return View(new List<CatalogueItemVM>());
             }
         }
+        
         [HttpGet]
         public IActionResult Details(int id, string type)
         {
