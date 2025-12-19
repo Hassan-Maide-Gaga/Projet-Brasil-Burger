@@ -4,6 +4,7 @@ using brasilBurger.Models;
 
 namespace brasilBurger.Services.Impl
 {
+    
     public class UserServices : IUserServices
     {
         private readonly AppDbContext _context;
