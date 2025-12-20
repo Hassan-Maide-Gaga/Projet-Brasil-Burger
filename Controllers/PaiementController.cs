@@ -179,7 +179,7 @@ namespace brasilBurger.Controllers
             {
                 _logger.LogError(ex, "Erreur lors du traitement du paiement");
                 TempData["ErrorMessage"] = "Une erreur est survenue lors du traitement de votre commande.";
-                return RedirectToAction("Index", "Catalogue");
+                return RedirectToAction("Payer", "Paiement");
             }
         }
     }
