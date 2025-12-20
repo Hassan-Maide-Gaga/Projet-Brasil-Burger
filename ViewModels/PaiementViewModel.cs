@@ -1,3 +1,5 @@
+using brasilBurger.Models;
+
 namespace brasilBurger.ViewModels
 {
     public class PaiementViewModel
