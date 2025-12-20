@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +8,7 @@ using System.Security.Claims;
 using brasilBurger.Data;
 using brasilBurger.Services;
 using brasilBurger.Models;
+using brasilBurger.ViewModels;
 
 namespace brasilBurger.Controllers
 {
@@ -41,7 +42,7 @@ namespace brasilBurger.Controllers
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Email == model.Email);
                 
-                if (user != null && VerifyPassword(model.Password, user.PasswordHash))
+                if (user != null && VerifyPassword(model.Password, user.Password))
                 {
                     // ... reste du code ...
                     return RedirectToAction("Index", "Home");
@@ -52,16 +53,15 @@ namespace brasilBurger.Controllers
             return View(model);
         }
 
-        // ... autres méthodes ...
 
         private string HashPassword(string password)
         {
-            return BCrypt.Net.BCrypt.HashPassword(password);
+            return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password));
         }
 
         private bool VerifyPassword(string password, string passwordHash)
         {
-            return BCrypt.Net.BCrypt.Verify(password, passwordHash);
+            return passwordHash == Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password));
         }
     }
 
@@ -101,3 +101,7 @@ namespace brasilBurger.Controllers
         public string ConfirmPassword { get; set; }
     }
 }
+
+
+
+

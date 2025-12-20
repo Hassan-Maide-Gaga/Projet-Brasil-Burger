@@ -1,4 +1,4 @@
-using brasilBurger.Data;
+﻿using brasilBurger.Data;
 using brasilBurger.Services;
 using brasilBurger.Models;
 using brasilBurger.Services.Impl;
@@ -36,7 +36,7 @@ builder.Services.AddScoped<ICatalogueServices, CatalogueServices>();
 builder.Services.AddScoped<ICommandeServices, CommandeServices>();
 builder.Services.AddScoped<IPaiementServices, PaiementServices>();
 builder.Services.AddScoped<IUserServices, UserServices>();
-var builder = WebApplication.CreateBuilder(args);
+// var builder = WebApplication.CreateBuilder(args); // DUPLICATA COMMENTÉ
 //
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserServices, UserServices>();
@@ -56,7 +56,7 @@ builder.Services.AddAuthentication(options =>
 // Ajouter l'autorisation
 builder.Services.AddAuthorization();
 
-// Ajouter la session (nécessaire pour l'authentification par cookies)
+// Ajouter la session (nÃ©cessaire pour l'authentification par cookies)
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -97,10 +97,10 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<AppDbContext>();
         
-        // Test de connexion à la base de données
+        // Test de connexion Ã  la base de donnÃ©es
         var canConnect = await context.Database.CanConnectAsync();
         Console.WriteLine($"========== BRASIL BURGER ==========");
-        Console.WriteLine($"Connexion à la base : {(canConnect ? "✅ SUCCÈS" : "❌ ÉCHEC")}");
+        Console.WriteLine($"Connexion Ã  la base : {(canConnect ? "âœ… SUCCÃˆS" : "âŒ Ã‰CHEC")}");
         
         if (canConnect)
         {
@@ -125,17 +125,17 @@ using (var scope = app.Services.CreateScope())
             }
             catch (Exception dbEx)
             {
-                Console.WriteLine($"⚠️  Erreur lors de la lecture des données: {dbEx.Message}");
-                Console.WriteLine($"Détails: {dbEx.InnerException?.Message}");
+                Console.WriteLine($"âš ï¸  Erreur lors de la lecture des donnÃ©es: {dbEx.Message}");
+                Console.WriteLine($"DÃ©tails: {dbEx.InnerException?.Message}");
             }
         }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ ERREUR lors du test de connexion: {ex.Message}");
+        Console.WriteLine($"âŒ ERREUR lors du test de connexion: {ex.Message}");
         if (ex.InnerException != null)
         {
-            Console.WriteLine($"Détails: {ex.InnerException.Message}");
+            Console.WriteLine($"DÃ©tails: {ex.InnerException.Message}");
         }
         Console.WriteLine($"==================================");
     }

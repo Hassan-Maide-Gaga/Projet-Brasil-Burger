@@ -1,9 +1,10 @@
-using brasilBurger.Models;
+﻿using brasilBurger.Models;
 using brasilBurger.Services;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.AspNetCore.Authorization;
 namespace brasilBurger.Controllers
 {
+    [Authorize]
     public class CommandeController : Controller
     {
         private readonly ILogger<CommandeController> _logger;
@@ -46,7 +47,7 @@ namespace brasilBurger.Controllers
                     Total = (item.Prix * _Quantite) + complements.Sum(c => c.Prix),
                     ComplementIds = complements.Select(c => c.Id).ToList()
                 };
-                ViewBag.Client = _userServices.getClientById(1);
+                ViewBag.Client = _userServices.GetUserByIdAsync(1);
                 if(item == null)
                     return RedirectToAction("Index", "Catalogue");
                 return View("Paiement",paiementVM);
@@ -89,9 +90,9 @@ namespace brasilBurger.Controllers
                 return View(new Commande());
             }
         }
-        // Dans CommandeController.cs
-            [Authorize] // Requiert une authentification
-            // Pour une action spécifique
+
+             
+
             [Authorize(Roles = "Admin")] 
             public IActionResult AdminPanel()
             {

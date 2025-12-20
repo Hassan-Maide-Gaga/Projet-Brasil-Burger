@@ -1,4 +1,4 @@
-namespace brasilBurger.Models
+﻿namespace brasilBurger.Models
 {
     public enum RoleUser
     {

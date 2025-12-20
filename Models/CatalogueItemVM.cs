@@ -8,5 +8,6 @@ namespace brasilBurger.Models
         public string Image { get; set; }
         public DateTime? CreatedAt { get; set; }
         public string Type { get; set; } // "Burger" ou "Menu"
+         public string Description { get; set; } = string.Empty;
     }
 }
