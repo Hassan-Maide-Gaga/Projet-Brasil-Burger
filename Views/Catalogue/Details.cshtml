@@ -13,7 +13,11 @@
         </ol>
     </nav>
 
-    <form asp-action="Payer" asp-controller="Paiement" method="post" id="orderForm">
+    <form asp-action="Payer" asp-controller="Paiement" method="get" id="orderForm">
+        <input type="hidden" name="produitId" value="@Model.Id" id="produitIdInput" />
+        <input type="hidden" name="type" value="@Model.Type" id="typeInput" />
+        <input type="hidden" name="quantite" value="1" id="quantiteInput" />
+
 
         @Html.AntiForgeryToken()
         <input type="hidden" name="ProduitId" value="@Model.Id" />
@@ -246,6 +250,7 @@
         $('#increaseQty').click(() => {
             quantity++;
             $('#quantityInput').val(quantity);
+            $('#quantiteInput').val(quantity); // Mettre à jour le champ caché
             updateTotal();
         });
 
@@ -253,6 +258,7 @@
             if (quantity > 1) {
                 quantity--;
                 $('#quantityInput').val(quantity);
+                $('#quantiteInput').val(quantity); // Mettre à jour le champ caché
                 updateTotal();
             }
         });
@@ -290,6 +296,7 @@
             }
         });
 
+        // CORRECTION MAJEURE : Nouveau script de soumission
         $('#orderForm').submit(function(e) {
             e.preventDefault();
             
@@ -308,19 +315,22 @@
                 showCancelButton: true,
                 confirmButtonText: 'Continuer vers le paiement',
                 cancelButtonText: 'Modifier',
-                confirmButtonColor: 'var(--bs-orange)'
+                confirmButtonColor: '#ff6b35'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Ajouter la quantité au formulaire
-                    $(this).append(`<input type="hidden" name="quantite" value="${quantity}" />`);
+                    // Construire l'URL avec tous les paramètres
+                    let url = '/Paiement/Payer?';
+                    url += 'produitId=' + @Model.Id;
+                    url += '&type=' + encodeURIComponent('@Model.Type');
+                    url += '&quantite=' + quantity;
                     
-                    // Ajouter les compléments sélectionnés
+                    // Ajouter les compléments à l'URL
                     selectedComplements.forEach(compId => {
-                        $(this).append(`<input type="hidden" name="complements" value="${compId}" />`);
+                        url += '&complements=' + compId;
                     });
                     
-                    // Soumettre le formulaire
-                    this.submit();
+                    // Rediriger vers la page de paiement
+                    window.location.href = url;
                 }
             });
         });

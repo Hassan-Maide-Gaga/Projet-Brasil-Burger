@@ -38,10 +38,13 @@ namespace brasilBurger.Controllers
         {
             try
             {
+                _logger.LogInformation($"Payer GET appelé - ProduitId: {produitId}, Type: {type}, Quantite: {quantite}");
+                
                 // Récupérer le produit
                 var produit = _catalogueServices.GetItemById(produitId, type);
                 if (produit == null)
                 {
+                    _logger.LogWarning($"Produit introuvable - ID: {produitId}, Type: {type}");
                     TempData["ErrorMessage"] = "Produit introuvable";
                     return RedirectToAction("Index", "Catalogue");
                 }
@@ -62,6 +65,7 @@ namespace brasilBurger.Controllers
                 // Ajouter les compléments
                 if (complements != null && complements.Any())
                 {
+                    _logger.LogInformation($"Chargement de {complements.Count} compléments");
                     foreach(var compId in complements)
                     {
                         var complement = _catalogueServices.GetComplementById(compId);
@@ -80,6 +84,7 @@ namespace brasilBurger.Controllers
                 ViewBag.Client = user;
                 ViewBag.Zones = _context.Zones.Where(z => z.Etat).ToList();
                 
+                _logger.LogInformation($"Page Payer chargée avec succès - Total: {model.Total}");
                 return View(model);
             }
             catch (Exception ex)
