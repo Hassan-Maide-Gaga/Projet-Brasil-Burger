@@ -89,5 +89,18 @@ namespace brasilBurger.Controllers
                 return View(new Commande());
             }
         }
+        // Dans CommandeController.cs
+            [Authorize] // Requiert une authentification
+            public class CommandeController : Controller
+            {
+                // Toutes les actions nécessiteront maintenant une connexion
+            }
+
+            // Pour une action spécifique
+            [Authorize(Roles = "Admin")] 
+            public IActionResult AdminPanel()
+            {
+                return View();
+            }
     }
 }

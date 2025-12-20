@@ -1,90 +1,318 @@
-@using Microsoft.EntityFrameworkCore.Metadata.Internal
 @{
     ViewData["Title"] = "Détails du Produit";
+    Layout = "_Layout";
 }
 @model CatalogueItemVM
-<form asp-action="Commander" asp-controller="Commande" method="post">
-    <input type="hidden" name="ProduitId" value="@Model.Id" />
-    <input type="hidden" name="Type" value="@Model.Type" />
-    <section class="product-section">
-        <div class="container">
-            <div class="product-details">
-                <div class="col-md-6">
-                    <img src="@Model.Image"
-                        alt="@Model.Nom"
-                        class="product-image">
-                        
-                </div>
-                <div class="col-md-6 product-info">
-                    <span class="badge @(Model.Type=="Burger" ? "badge-vert" : "badge-bleu") badge-type mb-2">@Model.Type</span>
-                    <h3>@Model.Nom</h3>
-                    <p>
-                        Délicieux burger composé d’un steak de bœuf juteux,
-                        fromage fondant, salade fraîche et sauce maison.
-                    </p>
-                    <h5 class="text-vert ps-3">@Model.Prix FCFA</h5>
-                    <div class="mb-3">
-                        <h4>Compléments</h4>
-                        @if(Model.Type == "Burger"){
-                            <div class="mb-3">
-                                @foreach (var complement in ViewBag.Complements as List<Complement>)
-                                {
-                                    <div class="form-check">
-                                        <input class="form-check-input"
-                                            type="checkbox"
-                                            name="SelectedComplements"
-                                            value="@complement.Id"
-                                            id="complement_@complement.Id" />
-                                        <label class="form-check-label" for="complement_@complement.Id">
-                                            @complement.Nom - @complement.Prix FCFA
-                                        </label>
-                                    </div>
-                                }
-                            </div>
-                        }else if(Model.Type == "Menu"){
-                            @foreach (var complement in ViewBag.MenuComplements as List<Complement>)
-                            {   
-                                <div>
-                                    <h5 class="text-vert ps-3">@complement.Nom - @complement.Prix FCFA</h5>
-                                    <input type="hidden" name="SelectedComplements" value="@complement.Id" />
-                                </div>
-                            }
-                        }
-                    </div>
-                    <div class="quantity mb-4">
-                        <h4>Quantité</h4>
-                        <input type="number" name="_Quantite" class="form-control" min="1" value="1">
-                    </div>
-                    <button type="submit" class="btn btn-orange btn-lg">
-                        <i class="fa fa-cart-plus"></i> Commander
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-</form>
-@if (ViewBag.Similaires != null && (ViewBag.Similaires as List<CatalogueItemVM>).Count > 0)
-    {
-        <section class="product-section">
-            <div class="container">
-                <h3 class="text-center mb-4 fw-bold">Produits similaires</h3>
-                <div class="row g-4 similar-products">
-                    @foreach (var item in ViewBag.Similaires as List<CatalogueItemVM>)
+
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Catalogue" asp-action="Index">Catalogue</a></li>
+            <li class="breadcrumb-item"><a href="#">@Model.Type</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Nom</li>
+        </ol>
+    </nav>
+
+    <form asp-action="Commander" asp-controller="Commande" method="post" id="orderForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="ProduitId" value="@Model.Id" />
+        <input type="hidden" name="Type" value="@Model.Type" />
+        
+        <div class="row g-4">
+            <!-- Image produit -->
+            <div class="col-lg-6">
+                <div class="product-image-main card border-0 shadow-sm overflow-hidden">
+                    <img src="@Model.Image" alt="@Model.Nom" 
+                         class="img-fluid w-100" style="max-height: 500px; object-fit: cover;">
+                    @if (Model.Type == "Menu")
                     {
-                    <div class="col-sm-6 col-md-4 col-lg-3">
-                        <div class="card h-100 shadow-sm">
-                            <img src="@item.Image"
-                                class="card-img-top" alt="@item.Nom">
-                            <div class="card-body text-center d-flex flex-column">
-                                <span class="badge  @(Model.Type=="Burger" ? "badge-vert" : "badge-bleu") mb-2">@item.Type</span>
-                                <h5 class="card-title">@item.Nom</h5>
-                                <p class="fw-bold text-vert">@item.Prix FCFA</p>
-                                <a asp-controller="Catalogue" asp-action="Details" asp-route-id=@item.Id asp-route-type=@item.Type class="btn btn-orange mt-auto">Voir détails</a>
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <span class="badge bg-danger fs-6 py-2">
+                                <i class="fas fa-crown me-1"></i>MEILLEUR MENU
+                            </span>
+                        </div>
+                    }
+                </div>
+                
+                <!-- Miniatures -->
+                <div class="row g-2 mt-3">
+                    @for (int i = 0; i < 3; i++)
+                    {
+                        <div class="col-4">
+                            <div class="thumbnail-img border rounded p-1">
+                                <img src="@Model.Image" alt="Vue @(i+1)" 
+                                     class="img-fluid rounded" style="height: 80px; object-fit: cover;">
                             </div>
                         </div>
-                    </div>
                     }
                 </div>
             </div>
+
+            <!-- Informations produit -->
+            <div class="col-lg-6">
+                <div class="product-details">
+                    <span class="badge @(Model.Type == "Burger" ? "badge-vert" : "badge-bleu") fs-6 mb-3">
+                        @Model.Type
+                    </span>
+                    
+                    <h1 class="fw-bold mb-3">@Model.Nom</h1>
+                    
+                    <!-- Évaluation -->
+                    <div class="rating mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="star-rating me-2">
+                                @for (int i = 0; i < 5; i++)
+                                {
+                                    <i class="fas fa-star @(i < 4 ? "text-warning" : "text-muted")"></i>
+                                }
+                            </div>
+                            <span class="text-muted">(4.2 • 156 avis)</span>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <h5 class="fw-semibold mb-2">Description</h5>
+                        <p class="text-muted">@Model.Description</p>
+                    </div>
+
+                    <!-- Prix -->
+                    <div class="price-section mb-4 p-3 bg-light rounded">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="text-muted">Prix unitaire</span>
+                                <h2 class="text-vert fw-bold mb-0">@Model.Prix.ToString("N0") FCFA</h2>
+                            </div>
+                            <div class="total-price">
+                                <span class="text-muted d-block">Total</span>
+                                <h3 class="text-vert fw-bold mb-0" id="totalPrice">@Model.Prix.ToString("N0") FCFA</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Compléments -->
+                    <div class="complements-section mb-4">
+                        <h5 class="fw-semibold mb-3">
+                            <i class="fas fa-plus-circle me-2 text-vert"></i>
+                            @(Model.Type == "Burger" ? "Ajoutez des compléments" : "Inclus dans le menu")
+                        </h5>
+                        
+                        @if (Model.Type == "Burger" && ViewBag.Complements is List<Complement> complements)
+                        {
+                            <div class="row g-2">
+                                @foreach (var comp in complements)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="complement-card border rounded p-3">
+                                            <div class="form-check d-flex align-items-center">
+                                                <input class="form-check-input me-3" type="checkbox" 
+                                                       name="SelectedComplements" value="@comp.Id" 
+                                                       id="comp_@comp.Id" data-price="@comp.Prix">
+                                                <div class="flex-grow-1">
+                                                    <label class="form-check-label fw-medium" for="comp_@comp.Id">
+                                                        @comp.Nom
+                                                    </label>
+                                                    <div class="text-muted small">+@comp.Prix.ToString("N0") FCFA</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else if (Model.Type == "Menu" && ViewBag.MenuComplements is List<Complement> menuComps)
+                        {
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Ce menu inclut automatiquement :
+                            </div>
+                            <div class="row g-2">
+                                @foreach (var comp in menuComps)
+                                {
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-center p-2 border rounded">
+                                            <i class="fas fa-check text-success me-3"></i>
+                                            <div>
+                                                <span class="fw-medium">@comp.Nom</span>
+                                                <span class="text-muted ms-2">+@comp.Prix.ToString("N0") FCFA</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Quantité et actions -->
+                    <div class="actions-section">
+                        <div class="row g-3 align-items-center mb-4">
+                            <div class="col-auto">
+                                <label class="form-label fw-medium">Quantité</label>
+                            </div>
+                            <div class="col-auto">
+                                <div class="input-group" style="width: 140px;">
+                                    <button class="btn btn-outline-secondary" type="button" id="decreaseQty">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" name="_Quantite" id="quantityInput" 
+                                           class="form-control text-center border-secondary" 
+                                           min="1" value="1" readonly>
+                                    <button class="btn btn-outline-secondary" type="button" id="increaseQty">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="text-end">
+                                    <span class="text-muted">Stock disponible : </span>
+                                    <span class="badge bg-success">12 unités</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Boutons d'action -->
+                        <div class="d-flex flex-wrap gap-3">
+                            <button type="submit" class="btn btn-orange btn-lg flex-grow-1 py-3">
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                Ajouter au panier • <span id="dynamicTotal">@Model.Prix.ToString("N0") FCFA</span>
+                            </button>
+                            
+                            <button type="button" class="btn btn-outline-orange btn-lg" id="wishlistBtn">
+                                <i class="far fa-heart"></i>
+                            </button>
+                            
+                            <button type="button" class="btn btn-outline-secondary btn-lg" 
+                                    onclick="window.history.back()">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Produits similaires -->
+    @if (ViewBag.Similaires != null && (ViewBag.Similaires as List<CatalogueItemVM>).Any())
+    {
+        <section class="similar-products mt-5 pt-5 border-top">
+            <h3 class="fw-bold mb-4">
+                <i class="fas fa-fire text-orange me-2"></i>
+                Produits similaires
+            </h3>
+            <div class="row g-4">
+                @foreach (var item in ViewBag.Similaires as List<CatalogueItemVM>)
+                {
+                    <div class="col-md-4 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm product-hover">
+                            <img src="@item.Image" class="card-img-top" 
+                                 alt="@item.Nom" style="height: 180px; object-fit: cover;">
+                            <div class="card-body">
+                                <span class="badge @(item.Type == "Burger" ? "badge-vert" : "badge-bleu") mb-2">
+                                    @item.Type
+                                </span>
+                                <h6 class="card-title fw-bold">@item.Nom</h6>
+                                <p class="fw-bold text-vert mb-2">@item.Prix.ToString("N0") FCFA</p>
+                                <a asp-controller="Catalogue" asp-action="Details" 
+                                   asp-route-id="@item.Id" asp-route-type="@item.Type"
+                                   class="btn btn-sm btn-orange w-100">
+                                    Voir détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
         </section>
     }
+</div>
+
+<!-- Scripts pour la page détails -->
+@section Scripts {
+    <script>
+        let basePrice = @Model.Prix;
+        let quantity = 1;
+        let selectedComplements = new Set();
+
+        function updateTotal() {
+            let total = basePrice * quantity;
+            
+            // Ajouter prix des compléments
+            selectedComplements.forEach(compId => {
+                const compPrice = document.querySelector(`[data-price][value="${compId}"]`)?.dataset.price || 0;
+                total += parseInt(compPrice) * quantity;
+            });
+            
+            // Mettre à jour l'affichage
+            $('#totalPrice').text(total.toLocaleString('fr-FR') + ' FCFA');
+            $('#dynamicTotal').text(total.toLocaleString('fr-FR') + ' FCFA');
+        }
+
+        // Gestion quantité
+        $('#increaseQty').click(() => {
+            quantity++;
+            $('#quantityInput').val(quantity);
+            updateTotal();
+        });
+
+        $('#decreaseQty').click(() => {
+            if (quantity > 1) {
+                quantity--;
+                $('#quantityInput').val(quantity);
+                updateTotal();
+            }
+        });
+
+        // Gestion compléments
+        $('input[name="SelectedComplements"]').change(function() {
+            if (this.checked) {
+                selectedComplements.add(this.value);
+            } else {
+                selectedComplements.delete(this.value);
+            }
+            updateTotal();
+        });
+
+        // Wishlist
+        $('#wishlistBtn').click(function() {
+            const btn = $(this);
+            const icon = btn.find('i');
+            
+            if (icon.hasClass('far')) {
+                icon.removeClass('far').addClass('fas text-danger');
+                btn.addClass('active');
+                Swal.fire('Ajouté !', 'Produit ajouté à votre liste de souhaits', 'success');
+            } else {
+                icon.removeClass('fas text-danger').addClass('far');
+                btn.removeClass('active');
+                Swal.fire('Retiré !', 'Produit retiré de votre liste', 'info');
+            }
+        });
+
+        // Soumission du formulaire avec confirmation
+        $('#orderForm').submit(function(e) {
+            e.preventDefault();
+            
+            Swal.fire({
+                title: 'Confirmer la commande',
+                html: `
+                    <div class="text-start">
+                        <p><strong>@Model.Nom</strong></p>
+                        <p>Quantité : ${quantity}</p>
+                        <p>Total : <span class="text-vert fw-bold">${$('#totalPrice').text()}</span></p>
+                    </div>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Confirmer',
+                cancelButtonText: 'Annuler',
+                confirmButtonColor: 'var(--primary)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.submit();
+                }
+            });
+        });
+    </script>
+}

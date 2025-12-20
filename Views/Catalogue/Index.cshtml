@@ -1,65 +1,205 @@
 @{
     ViewData["Title"] = "Catalogue";
+    Layout = "_Layout";
 }
 @model IEnumerable<CatalogueItemVM>
 
-<body class="">
-    <section class="py-4">
-        <div class="container">
-            <form method="get" class="row g-3 align-items-end">
-                <div class="col-12 col-md-5">
-                    <label class="form-label">Type de produit</label>
-                    <select name="type" class="form-select" >
-                        <option value="all" selected="@(ViewBag.SelectedType == "all" ? "selected" : null)">Tous</option>
-                        <option value="burger" selected="@(ViewBag.SelectedType == "burger" ? "selected" : null)">Burger</option>
-                        <option value="menu" selected="@(ViewBag.SelectedType == "menu" ? "selected" : null)">Menu</option>
-                    </select>
-                </div>
-                <div class="col-12 col-md-3 d-grid">
-                    <button type="submit" class="btn btn-orange">
-                        <i class="fa fa-filter"></i> Filtrer
+<div class="container-fluid px-lg-5">
+    <!-- Hero Section -->
+    <div class="hero-banner mb-5 rounded-4 p-5" 
+         style="background: linear-gradient(135deg, var(--primary) 0%, var(--second) 100%);">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold text-white mb-3">Nos Délices Brésiliens</h1>
+                <p class="lead text-white opacity-90 mb-4">Burger gourmets et menus complets pour une expérience unique</p>
+                <!-- Recherche rapide -->
+                <div class="search-box input-group mb-3 shadow">
+                    <input type="text" class="form-control form-control-lg" 
+                           placeholder="Rechercher un produit..." id="searchInput">
+                    <button class="btn btn-light" type="button">
+                        <i class="fas fa-search"></i>
                     </button>
                 </div>
-                
-            </form>
+            </div>
         </div>
-    </section>
-    <section class="py-5">
-        <div class="container">
-            <h2 class="text-center mb-5 fw-bold">Catalogue</h2>
-            <div class="row g-4">
-                @foreach (var item in Model)
-                {
-                    <div class="col-sm-6 col-md-4 col-lg-3">
-                        <div class="card h-100 shadow-sm">
-                            <img src="@item.Image" class="card-img-top" alt="@item.Nom">
-                            <div class="card-body text-center d-flex flex-column">
-                                <span class="badge @(item.Type == "Menu" ? "badge-bleu" : "badge-vert") mb-2">
-                                    @item.Type
+    </div>
+
+    <!-- Filtres améliorés -->
+    <div class="filters-section mb-5">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <!-- Filtres par type -->
+            <div class="btn-group filter-buttons" role="group">
+                <input type="radio" class="btn-check" name="typeFilter" id="typeAll" autocomplete="off" 
+                       @(ViewBag.SelectedType == "all" || string.IsNullOrEmpty(ViewBag.SelectedType) ? "checked" : "")>
+                <label class="btn btn-outline-secondary" for="typeAll">Tous</label>
+
+                <input type="radio" class="btn-check" name="typeFilter" id="typeBurger" autocomplete="off" 
+                       @(ViewBag.SelectedType == "burger" ? "checked" : "")>
+                <label class="btn btn-outline-secondary" for="typeBurger">
+                    <i class="fas fa-hamburger me-2"></i>Burgers
+                </label>
+
+                <input type="radio" class="btn-check" name="typeFilter" id="typeMenu" autocomplete="off" 
+                       @(ViewBag.SelectedType == "menu" ? "checked" : "")>
+                <label class="btn btn-outline-secondary" for="typeMenu">
+                    <i class="fas fa-utensils me-2"></i>Menus
+                </label>
+            </div>
+
+            <!-- Trier par -->
+            <div class="d-flex align-items-center">
+                <label class="me-2 fw-medium">Trier par :</label>
+                <select class="form-select form-select-sm w-auto border-0 bg-transparent fw-medium" 
+                        style="box-shadow: none !important;">
+                    <option>Popularité</option>
+                    <option>Prix croissant</option>
+                    <option>Prix décroissant</option>
+                    <option>Nouveautés</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grille de produits -->
+    <div class="row g-4" id="productGrid">
+        @if (Model == null || !Model.Any())
+        {
+            <div class="col-12">
+                <div class="alert alert-info text-center py-5">
+                    <i class="fas fa-info-circle fa-2x mb-3"></i>
+                    <h4>Aucun produit disponible</h4>
+                    <p class="mb-0">Les produits seront bientôt ajoutés au catalogue</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            @foreach (var item in Model)
+            {
+                <div class="col-sm-6 col-md-4 col-lg-3 product-card">
+                    <div class="card h-100 border-0 shadow-sm product-hover">
+                        <!-- Badge promo/stock -->
+                        @if (item.Type == "Menu")
+                        {
+                            <div class="position-absolute top-0 start-0 m-3">
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-crown me-1"></i>Menu
                                 </span>
-                                <h5 class="card-title">@item.Nom</h5>
-                                <p class="fw-bold text-vert">@item.Prix FCFA</p>
-                                <a asp-controller="Catalogue" asp-action="Details" asp-route-id=@item.Id asp-route-type=@item.Type class="btn btn-orange mt-auto">Voir détails</a>
+                            </div>
+                        }
+                        
+                        <!-- Image produit -->
+                        <div class="product-image-container position-relative overflow-hidden" 
+                             style="height: 200px; border-radius: 12px 12px 0 0;">
+                            <img src="@item.Image" class="product-img w-100 h-100 object-fit-cover" 
+                                 alt="@item.Nom" loading="lazy">
+                            <div class="product-overlay"></div>
+                            <button class="btn btn-sm btn-light quick-view-btn position-absolute" 
+                                    data-id="@item.Id" data-type="@item.Type">
+                                <i class="fas fa-eye"></i> Voir
+                            </button>
+                        </div>
+
+                        <!-- Contenu carte -->
+                        <div class="card-body d-flex flex-column p-3">
+                            <span class="badge @(item.Type == "Menu" ? "badge-bleu" : "badge-vert") mb-2 align-self-start">
+                                @item.Type
+                            </span>
+                            <h5 class="card-title fw-bold mb-2 text-truncate">@item.Nom</h5>
+                            <p class="text-muted small mb-3 flex-grow-1">
+                                @item.Description?.Substring(0, Math.Min(item.Description?.Length ?? 0, 60))...
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                <h5 class="text-vert fw-bold mb-0">@item.Prix.ToString("N0") FCFA</h5>
+                                <div class="d-flex gap-2">
+                                    <a asp-controller="Catalogue" asp-action="Details" 
+                                       asp-route-id="@item.Id" asp-route-type="@item.Type"
+                                       class="btn btn-sm btn-orange rounded-pill px-3">
+                                        <i class="fas fa-shopping-cart me-1"></i>Commander
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
-                }
-            </div>
-            <div class="d-flex justify-content-center align-items-center gap-3 mt-5">
+                </div>
+            }
+        }
+    </div>
+
+    <!-- Pagination améliorée -->
+    @if (Model != null && Model.Any())
+    {
+        <nav class="mt-5" aria-label="Navigation produits">
+            <ul class="pagination justify-content-center">
                 @{
                     var currentPage = ViewBag.CurrentPage ?? 1;
                     var totalPages = ViewBag.TotalPages ?? 1;
+                    
+                    @if (currentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="?page=@(currentPage - 1)&type=@ViewBag.SelectedType">
+                                <i class="fas fa-chevron-left"></i> Précédent
+                            </a>
+                        </li>
+                    }
+
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <li class="page-item @(i == currentPage ? "active" : "")">
+                            <a class="page-link" href="?page=@i&type=@ViewBag.SelectedType">@i</a>
+                        </li>
+                    }
+
+                    @if (currentPage < totalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="?page=@(currentPage + 1)&type=@ViewBag.SelectedType">
+                                Suivant <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    }
                 }
-                @if (currentPage > 1)
-                {
-                    <a href="?page=@(currentPage - 1)&type=@ViewBag.SelectedType" class="btn btn-outline-orange">Précédent</a>
-                }
-                <span>Page @currentPage / @totalPages</span>
-                @if (currentPage < totalPages)
-                {
-                    <a href="?page=@(currentPage + 1)&type=@ViewBag.SelectedType" class="btn btn-outline-orange">Suivant</a>
-                }
-            </div>
-        </div>
-    </section>
-</body>
+            </ul>
+        </nav>
+    }
+</div>
+
+<!-- Scripts pour interactions -->
+@section Scripts {
+    <script>
+        // Filtrage dynamique
+        document.querySelectorAll('input[name="typeFilter"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const type = this.id.replace('type', '').toLowerCase();
+                window.location.href = `?type=${type === 'all' ? 'all' : type}`;
+            });
+        });
+
+        // Recherche en temps réel
+        $('#searchInput').on('input', function() {
+            const searchTerm = $(this).val().toLowerCase();
+            $('.product-card').each(function() {
+                const title = $(this).find('.card-title').text().toLowerCase();
+                $(this).toggle(title.includes(searchTerm));
+            });
+        });
+
+        // Quick View
+        $('.quick-view-btn').click(function() {
+            const id = $(this).data('id');
+            const type = $(this).data('type');
+            
+            Swal.fire({
+                title: 'Chargement...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            // Simulation AJAX pour détail rapide
+            setTimeout(() => {
+                window.location.href = `/Catalogue/Details?id=${id}&type=${type}`;
+            }, 500);
+        });
+    </script>
+}

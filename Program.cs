@@ -36,7 +36,40 @@ builder.Services.AddScoped<ICatalogueServices, CatalogueServices>();
 builder.Services.AddScoped<ICommandeServices, CommandeServices>();
 builder.Services.AddScoped<IPaiementServices, PaiementServices>();
 builder.Services.AddScoped<IUserServices, UserServices>();
+var builder = WebApplication.CreateBuilder(args);
+//
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserServices, UserServices>();
+// Ajouter les services d'authentification
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = "Cookies";
+    options.DefaultSignInScheme = "Cookies";
+    options.DefaultChallengeScheme = "Cookies";
+})
+.AddCookie("Cookies", options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+});
 
+// Ajouter l'autorisation
+builder.Services.AddAuthorization();
+
+// Ajouter la session (nécessaire pour l'authentification par cookies)
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// Ajouter les services existants
+builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllersWithViews();
 
