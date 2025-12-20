@@ -13,7 +13,7 @@
         </ol>
     </nav>
 
-    <form asp-action="Preparer" asp-controller="Paiement" method="post" id="orderForm">
+    <form asp-action="TraiterPaiement" asp-controller="Paiement" method="post" id="orderForm">
         @Html.AntiForgeryToken()
         <input type="hidden" name="ProduitId" value="@Model.Id" />
         <input type="hidden" name="Type" value="@Model.Type" />
