@@ -1,6 +1,8 @@
 using brasilBurger.Services;
+using System;
 using Microsoft.AspNetCore.Mvc;
 using brasilBurger.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace brasilBurger.Controllers
 {
