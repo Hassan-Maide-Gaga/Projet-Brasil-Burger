@@ -162,12 +162,22 @@ namespace brasilBurger.Controllers
 
         private string HashPassword(string password)
         {
+
             return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password));
         }
 
         private bool VerifyPassword(string password, string passwordHash)
         {
-            return passwordHash == Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password));
+            try
+            {
+                // Décode le hash de la base et compare avec le mot de passe en clair
+                var decodedHash = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(passwordHash));
+                return password == decodedHash;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
