@@ -6,7 +6,9 @@ namespace brasilBurger.Services
     {
         User getClientById(int id);
         Task<User> GetCurrentUserAsync();
-    Task<User> GetUserByIdAsync(int id);
-    Task<User> GetUserByEmailAsync(string email);
+        Task<User> GetUserByIdAsync(int id);
+        Task<User> GetUserByEmailAsync(string email);
+        Task<User> GetCurrentUserAsync();
+
     }
 }

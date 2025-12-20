@@ -29,15 +29,24 @@ namespace brasilBurger.Services.Impl
             }
         }
          public async Task<User> GetCurrentUserAsync()
-    {
-        var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier);
-        
-        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
         {
-            return null;
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier);
+            
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return null;
+            }
+
+            return await _context.Users.FindAsync(userId);
+        }
+        public async Task<User> GetUserByIdAsync(int id)
+        {
+            return await _context.Users.FindAsync(id);
         }
 
-        return await _context.Users.FindAsync(userId);
-    }
+        public async Task<User> GetUserByEmailAsync(string email)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        }
     }
 }
