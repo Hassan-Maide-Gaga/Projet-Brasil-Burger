@@ -71,6 +71,42 @@ namespace brasilBurger.Controllers
             }
         }
 
+        
+        // POST: /Paiement/Preparer - Pour rediriger depuis la page détail
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Preparer(int ProduitId, string Type, int Quantite, List<int> SelectedComplements)
+        {
+            try
+            {
+                // Construire l'URL avec les paramètres
+                var queryParams = new System.Text.StringBuilder();
+                queryParams.Append($"?produitId={ProduitId}&type={Type}&quantite={Quantite}");
+                
+                if (SelectedComplements != null && SelectedComplements.Count > 0)
+                {
+                    foreach (var compId in SelectedComplements)
+                    {
+                        queryParams.Append($"&complements={compId}");
+                    }
+                }
+                
+                return RedirectToAction("Payer", new 
+                { 
+                    produitId = ProduitId, 
+                    type = Type, 
+                    quantite = Quantite,
+                    complements = SelectedComplements 
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur dans Preparer");
+                return RedirectToAction("Details", "Catalogue", new { id = ProduitId, type = Type });
+            }
+        }
+    
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult TraiterPaiement(
@@ -179,7 +215,7 @@ namespace brasilBurger.Controllers
             {
                 _logger.LogError(ex, "Erreur lors du traitement du paiement");
                 TempData["ErrorMessage"] = "Une erreur est survenue lors du traitement de votre commande.";
-                return RedirectToAction("Payer", "Paiement");
+                return RedirectToAction("Index", "Catalogue");
             }
         }
     }
