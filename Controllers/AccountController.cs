@@ -23,7 +23,7 @@ namespace brasilBurger.Controllers
             _userServices = userServices;
         }
 
-        // GET: /Account/Login
+       
         [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
@@ -31,7 +31,7 @@ namespace brasilBurger.Controllers
             return View();
         }
 
-        // POST: /Account/Login
+      
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -79,14 +79,12 @@ namespace brasilBurger.Controllers
             return View(model);
         }
 
-        // GET: /Account/Register
         [AllowAnonymous]
         public IActionResult Register()
         {
             return View();
         }
 
-        // POST: /Account/Register
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]

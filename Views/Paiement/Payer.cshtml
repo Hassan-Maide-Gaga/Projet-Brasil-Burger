@@ -1,0 +1,71 @@
+@model brasilBurger.ViewModels.PaiementViewModel
+@{
+    ViewData["Title"] = "Paiement";
+    Layout = "_Layout";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h2 class="mb-4">Finaliser votre commande</h2>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Récapitulatif de la commande</h5>
+                    <p><strong>Produit :</strong> @Model.NomProduit</p>
+                    <p><strong>Quantité :</strong> @Model.Quantite</p>
+                    <p><strong>Total :</strong> <span class="text-success fw-bold">@Model.Total.ToString("N0") FCFA</span></p>
+                </div>
+            </div>
+            
+            <form asp-action="TraiterPaiement" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ProduitId" value="@Model.ProduitId" />
+                <input type="hidden" name="Type" value="@Model.Type" />
+                <input type="hidden" name="Quantite" value="@Model.Quantite" />
+                
+                <div class="mb-3">
+                    <label class="form-label">Mode de paiement</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="ModePaiement" value="OM" checked>
+                        <label class="form-check-label">Orange Money</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="ModePaiement" value="WAVE">
+                        <label class="form-check-label">Wave</label>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Numéro de téléphone</label>
+                    <input type="text" class="form-control" name="Telephone" required 
+                           value="@ViewBag.Client?.Telephone">
+                </div>
+                
+                <button type="submit" class="btn btn-orange btn-lg w-100">
+                    <i class="fas fa-lock me-2"></i>Payer maintenant
+                </button>
+            </form>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Sécurité garantie</h5>
+                    <p class="card-text">
+                        <i class="fas fa-shield-alt text-success me-2"></i>
+                        Paiement 100% sécurisé
+                    </p>
+                    <p class="card-text">
+                        <i class="fas fa-truck text-primary me-2"></i>
+                        Livraison en 45 min max
+                    </p>
+                    <p class="card-text">
+                        <i class="fas fa-phone text-info me-2"></i>
+                        Support 7j/7
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -13,10 +13,11 @@
         </ol>
     </nav>
 
-    <form asp-action="Commander" asp-controller="Commande" method="post" id="orderForm">
+    <form asp-action="Payer" asp-controller="Paiement" method="post" id="orderForm">
         @Html.AntiForgeryToken()
         <input type="hidden" name="ProduitId" value="@Model.Id" />
         <input type="hidden" name="Type" value="@Model.Type" />
+        
         
         <div class="row g-4">
             <div class="col-lg-6">
@@ -161,12 +162,22 @@
                                 </div>
                             </div>
                         </div>
+                         <div class="actions-section">
+                <div class="d-flex flex-wrap gap-3">
+                    <!-- Bouton modifié pour être plus clair -->
+                    <button type="submit" class="btn btn-orange btn-lg flex-grow-1 py-3">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Passer à la caisse <span id="dynamicTotal">@Model.Prix.ToString("N0") FCFA</span>
+                        <button type="button" class="btn btn-outline-orange btn-lg" id="addToCartBtn">
+                        <i class="fas fa-shopping-cart me-2"></i>Panier
+                    </button>
 
                         <div class="d-flex flex-wrap gap-3">
                             <button type="submit" class="btn btn-orange btn-lg flex-grow-1 py-3">
                                 <i class="fas fa-shopping-cart me-2"></i>
                                 Ajouter au panier FCFA <span id="dynamicTotal">@Model.Prix.ToString("N0") FCFA</span>
                             </button>
+
                             
                             <button type="button" class="btn btn-outline-orange btn-lg" id="wishlistBtn">
                                 <i class="far fa-heart"></i>
@@ -234,6 +245,15 @@
             $('#totalPrice').text(total.toLocaleString('fr-FR') + ' FCFA');
             $('#dynamicTotal').text(total.toLocaleString('fr-FR') + ' FCFA');
         }
+         $('#addToCartBtn').click(function() {
+            // Ici vous pourriez stocker l'article dans un panier (localStorage)
+            Swal.fire({
+                title: 'Ajouté !',
+                text: 'Produit ajouté à votre panier',
+                icon: 'success',
+                timer: 1500
+            });
+        });
 
         $('#increaseQty').click(() => {
             quantity++;
