@@ -41,17 +41,18 @@ builder.Services.AddScoped<IUserServices, UserServices>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserServices, UserServices>();
 // Ajouter les services d'authentification
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = "Cookies";
-    options.DefaultSignInScheme = "Cookies";
-    options.DefaultChallengeScheme = "Cookies";
-})
-.AddCookie("Cookies", options =>
-{
-    options.LoginPath = "/Account/Login";
-    options.ExpireTimeSpan = TimeSpan.FromDays(7);
-});
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AccessDenied";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromDays(30);
+    });
 
 // Ajouter l'autorisation
 builder.Services.AddAuthorization();
