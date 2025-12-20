@@ -102,32 +102,25 @@ namespace brasilBurger.Controllers
 
                 // Vérifier si le téléphone existe déjà
                 var existingPhone = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Telephone == model.PhoneNumber);
+                    .FirstOrDefaultAsync(u => u.Telephone == model.Telephone);
                 
                 if (existingPhone != null)
                 {
-                    ModelState.AddModelError("PhoneNumber", "Ce numéro de téléphone est déjà utilisé.");
+                    ModelState.AddModelError("Telephone", "Ce numéro de téléphone est déjà utilisé.");
                     return View(model);
                 }
 
                 // Créer le nouvel utilisateur
                 var user = new User
                 {
-                    NomComplet = $"{model.FirstName} {model.LastName}",
+                    NomComplet = $"{model.Prenom} {model.Nom}",
                     Email = model.Email,
-                    Telephone = model.PhoneNumber,
+                    Telephone = model.Telephone,
                     Password = HashPassword(model.Password),
-                    Role = RoleUser.CLIENT, // Par défaut, les nouveaux utilisateurs sont des clients
+                    Role = RoleUser.CLIENT,
                     Etat = true,
                     CreatedAt = DateTime.UtcNow
                 };
-
-                // Ajouter l'adresse si elle est fournie
-                if (!string.IsNullOrEmpty(model.Address))
-                {
-                    // Vous pourriez avoir un champ Adresse dans votre modèle User
-                    // Si ce n'est pas le cas, vous devrez l'ajouter
-                }
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
@@ -159,7 +152,6 @@ namespace brasilBurger.Controllers
             return View(model);
         }
 
-        // POST: /Account/Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -170,8 +162,6 @@ namespace brasilBurger.Controllers
 
         private string HashPassword(string password)
         {
-            // Note: En production, utilisez BCrypt ou une méthode de hash sécurisée
-            // Pour l'instant, on fait un simple hash Base64 pour tester
             return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password));
         }
 
@@ -179,55 +169,5 @@ namespace brasilBurger.Controllers
         {
             return passwordHash == Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(password));
         }
-    }
-
-    // ViewModels inline pour simplifier
-    public class LoginViewModel
-    {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
-
-        [Required]
-        [DataType(DataType.Password)]
-        public string Password { get; set; }
-
-        [Display(Name = "Se souvenir de moi")]
-        public bool RememberMe { get; set; }
-    }
-
-    public class RegisterViewModel
-    {
-        [Required(ErrorMessage = "L'email est obligatoire")]
-        [EmailAddress(ErrorMessage = "Format d'email invalide")]
-        [Display(Name = "Email")]
-        public string Email { get; set; }
-
-        [Required(ErrorMessage = "Le mot de passe est obligatoire")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "Le mot de passe doit contenir au moins 6 caractères")]
-        [DataType(DataType.Password)]
-        [Display(Name = "Mot de passe")]
-        public string Password { get; set; }
-
-        [DataType(DataType.Password)]
-        [Display(Name = "Confirmer le mot de passe")]
-        [Compare("Password", ErrorMessage = "Les mots de passe ne correspondent pas")]
-        public string ConfirmPassword { get; set; }
-
-        [Required(ErrorMessage = "Le prénom est obligatoire")]
-        [Display(Name = "Prénom")]
-        public string FirstName { get; set; }
-
-        [Required(ErrorMessage = "Le nom est obligatoire")]
-        [Display(Name = "Nom")]
-        public string LastName { get; set; }
-
-        [Required(ErrorMessage = "Le numéro de téléphone est obligatoire")]
-        [Phone(ErrorMessage = "Format de téléphone invalide")]
-        [Display(Name = "Téléphone")]
-        public string PhoneNumber { get; set; }
-
-        [Display(Name = "Adresse")]
-        public string Address { get; set; }
     }
 }

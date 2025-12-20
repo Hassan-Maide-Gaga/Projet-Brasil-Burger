@@ -48,7 +48,10 @@
                                 <a href="#" class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown">
                                     <div class="user-avatar me-2 bg-light rounded-circle d-flex align-items-center justify-content-center" 
                                          style="width: 36px; height: 36px; color: var(--primary); font-weight: 600;">
-                                        @User.Identity.Name?[0].ToString().ToUpper()
+                                        @if (!string.IsNullOrEmpty(User.Identity.Name) && User.Identity.Name.Length > 0)
+                                        {
+                                            @User.Identity.Name[0].ToString().ToUpper()
+                                        }
                                     </div>
                                     <span>@User.Identity.Name</span>
                                 </a>
@@ -57,6 +60,7 @@
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form method="post" asp-controller="Account" asp-action="Logout" class="m-0">
+                                            @Html.AntiForgeryToken()
                                             <button type="submit" class="dropdown-item text-danger">
                                                 <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
                                             </button>
