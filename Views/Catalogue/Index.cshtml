@@ -10,8 +10,8 @@
          style="background: linear-gradient(135deg, var(--primary) 0%, var(--second) 100%);">
         <div class="row align-items-center">
             <div class="col-lg-8">
-                <h1 class="display-5 fw-bold text-white mb-3">Nos DÃ©lices BrÃ©siliens</h1>
-                <p class="lead text-white opacity-90 mb-4">Burger gourmets et menus complets pour une expÃ©rience unique</p>
+                <h1 class="display-5 fw-bold text-white mb-3">Nos Delices Bresiliens</h1>
+                <p class="lead text-white opacity-90 mb-4">Burger gourmets et menus complets pour une experience unique</p>
                 <!-- Recherche rapide -->
                 <div class="search-box input-group mb-3 shadow">
                     <input type="text" class="form-control form-control-lg" 
@@ -24,10 +24,10 @@
         </div>
     </div>
 
-    <!-- Filtres amÃ©liorÃ©s -->
+
     <div class="filters-section mb-5">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-            <!-- Filtres par type -->
+
             <div class="btn-group filter-buttons" role="group">
                 <input type="radio" class="btn-check" name="typeFilter" id="typeAll" autocomplete="off" 
                        @(ViewBag.SelectedType == "all" || string.IsNullOrEmpty(ViewBag.SelectedType) ? "checked" : "")>
@@ -46,21 +46,21 @@
                 </label>
             </div>
 
-            <!-- Trier par -->
+
             <div class="d-flex align-items-center">
                 <label class="me-2 fw-medium">Trier par :</label>
                 <select class="form-select form-select-sm w-auto border-0 bg-transparent fw-medium" 
                         style="box-shadow: none !important;">
-                    <option>PopularitÃ©</option>
+                    <option>Popularite</option>
                     <option>Prix croissant</option>
-                    <option>Prix dÃ©croissant</option>
-                    <option>NouveautÃ©s</option>
+                    <option>Prix decroissant</option>
+                    <option>Nouveautees</option>
                 </select>
             </div>
         </div>
     </div>
 
-    <!-- Grille de produits -->
+
     <div class="row g-4" id="productGrid">
         @if (Model == null || !Model.Any())
         {
@@ -68,7 +68,7 @@
                 <div class="alert alert-info text-center py-5">
                     <i class="fas fa-info-circle fa-2x mb-3"></i>
                     <h4>Aucun produit disponible</h4>
-                    <p class="mb-0">Les produits seront bientÃ´t ajoutÃ©s au catalogue</p>
+                    <p class="mb-0">Les produits seront bientot ajoutes au catalogue</p>
                 </div>
             </div>
         }
@@ -78,7 +78,7 @@
             {
                 <div class="col-sm-6 col-md-4 col-lg-3 product-card">
                     <div class="card h-100 border-0 shadow-sm product-hover">
-                        <!-- Badge promo/stock -->
+                       
                         @if (item.Type == "Menu")
                         {
                             <div class="position-absolute top-0 start-0 m-3">
@@ -88,7 +88,7 @@
                             </div>
                         }
                         
-                        <!-- Image produit -->
+                      
                         <div class="product-image-container position-relative overflow-hidden" 
                              style="height: 200px; border-radius: 12px 12px 0 0;">
                             <img src="@item.Image" class="product-img w-100 h-100 object-fit-cover" 
@@ -100,7 +100,7 @@
                             </button>
                         </div>
 
-                        <!-- Contenu carte -->
+                        
                         <div class="card-body d-flex flex-column p-3">
                             <span class="badge @(item.Type == "Menu" ? "badge-bleu" : "badge-vert") mb-2 align-self-start">
                                 @item.Type
@@ -126,7 +126,7 @@
         }
     </div>
 
-    <!-- Pagination amÃ©liorÃ©e -->
+
     @if (Model != null && Model.Any())
     {
         <nav class="mt-5" aria-label="Navigation produits">
@@ -139,7 +139,7 @@
                     {
                         <li class="page-item">
                             <a class="page-link" href="?page=@(currentPage - 1)&type=@ViewBag.SelectedType">
-                                <i class="fas fa-chevron-left"></i> PrÃ©cÃ©dent
+                                <i class="fas fa-chevron-left"></i> Precedent
                             </a>
                         </li>
                     }
@@ -165,10 +165,10 @@
     }
 </div>
 
-<!-- Scripts pour interactions -->
+
 @section Scripts {
     <script>
-        // Filtrage dynamique
+        
         document.querySelectorAll('input[name="typeFilter"]').forEach(radio => {
             radio.addEventListener('change', function() {
                 const type = this.id.replace('type', '').toLowerCase();
@@ -176,7 +176,7 @@
             });
         });
 
-        // Recherche en temps rÃ©el
+        
         $('#searchInput').on('input', function() {
             const searchTerm = $(this).val().toLowerCase();
             $('.product-card').each(function() {
@@ -185,7 +185,7 @@
             });
         });
 
-        // Quick View
+        
         $('.quick-view-btn').click(function() {
             const id = $(this).data('id');
             const type = $(this).data('type');
@@ -196,7 +196,7 @@
                 didOpen: () => Swal.showLoading()
             });
 
-            // Simulation AJAX pour dÃ©tail rapide
+            
             setTimeout(() => {
                 window.location.href = `/Catalogue/Details?id=${id}&type=${type}`;
             }, 500);

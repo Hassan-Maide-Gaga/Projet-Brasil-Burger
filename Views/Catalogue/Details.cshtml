@@ -1,11 +1,11 @@
 ﻿@{
-    ViewData["Title"] = "DÃ©tails du Produit";
+    ViewData["Title"] = "Details du Produit";
     Layout = "_Layout";
 }
 @model CatalogueItemVM
 
 <div class="container py-4">
-    <!-- Breadcrumb -->
+  
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-controller="Catalogue" asp-action="Index">Catalogue</a></li>
@@ -20,7 +20,7 @@
         <input type="hidden" name="Type" value="@Model.Type" />
         
         <div class="row g-4">
-            <!-- Image produit -->
+          
             <div class="col-lg-6">
                 <div class="product-image-main card border-0 shadow-sm overflow-hidden">
                     <img src="@Model.Image" alt="@Model.Nom" 
@@ -35,7 +35,7 @@
                     }
                 </div>
                 
-                <!-- Miniatures -->
+              
                 <div class="row g-2 mt-3">
                     @for (int i = 0; i < 3; i++)
                     {
@@ -49,7 +49,7 @@
                 </div>
             </div>
 
-            <!-- Informations produit -->
+        
             <div class="col-lg-6">
                 <div class="product-details">
                     <span class="badge @(Model.Type == "Burger" ? "badge-vert" : "badge-bleu") fs-6 mb-3">
@@ -58,7 +58,7 @@
                     
                     <h1 class="fw-bold mb-3">@Model.Nom</h1>
                     
-                    <!-- Ã‰valuation -->
+                  
                     <div class="rating mb-3">
                         <div class="d-flex align-items-center mb-2">
                             <div class="star-rating me-2">
@@ -67,17 +67,16 @@
                                     <i class="fas fa-star @(i < 4 ? "text-warning" : "text-muted")"></i>
                                 }
                             </div>
-                            <span class="text-muted">(4.2 â€¢ 156 avis)</span>
+                            <span class="text-muted">(4.2 et 156 avis)</span>
                         </div>
                     </div>
 
-                    <!-- Description -->
+                   
                     <div class="mb-4">
                         <h5 class="fw-semibold mb-2">Description</h5>
                         <p class="text-muted">Délicieux produit de notre carte.</p>
                     </div>
 
-                    <!-- Prix -->
                     <div class="price-section mb-4 p-3 bg-light rounded">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
@@ -91,11 +90,11 @@
                         </div>
                     </div>
 
-                    <!-- ComplÃ©ments -->
+                    
                     <div class="complements-section mb-4">
                         <h5 class="fw-semibold mb-3">
                             <i class="fas fa-plus-circle me-2 text-vert"></i>
-                            @(Model.Type == "Burger" ? "Ajoutez des complÃ©ments" : "Inclus dans le menu")
+                            @(Model.Type == "Burger" ? "Ajoutez des complements" : "Inclus dans le menu")
                         </h5>
                         
                         @if (Model.Type == "Burger" && ViewBag.Complements is List<Complement> complements)
@@ -144,11 +143,11 @@
                         }
                     </div>
 
-                    <!-- QuantitÃ© et actions -->
+                    
                     <div class="actions-section">
                         <div class="row g-3 align-items-center mb-4">
                             <div class="col-auto">
-                                <label class="form-label fw-medium">QuantitÃ©</label>
+                                <label class="form-label fw-medium">Quantite</label>
                             </div>
                             <div class="col-auto">
                                 <div class="input-group" style="width: 140px;">
@@ -166,7 +165,7 @@
                             <div class="col">
                                 <div class="text-end">
                                     <span class="text-muted">Stock disponible : </span>
-                                    <span class="badge bg-success">12 unitÃ©s</span>
+                                    <span class="badge bg-success">12 unites</span>
                                 </div>
                             </div>
                         </div>
@@ -175,7 +174,7 @@
                         <div class="d-flex flex-wrap gap-3">
                             <button type="submit" class="btn btn-orange btn-lg flex-grow-1 py-3">
                                 <i class="fas fa-shopping-cart me-2"></i>
-                                Ajouter au panier â€¢ <span id="dynamicTotal">@Model.Prix.ToString("N0") FCFA</span>
+                                Ajouter au panier FCFA <span id="dynamicTotal">@Model.Prix.ToString("N0") FCFA</span>
                             </button>
                             
                             <button type="button" class="btn btn-outline-orange btn-lg" id="wishlistBtn">
@@ -193,7 +192,7 @@
         </div>
     </form>
 
-    <!-- Produits similaires -->
+  
     @if (ViewBag.Similaires != null && (ViewBag.Similaires as List<CatalogueItemVM>).Any())
     {
         <section class="similar-products mt-5 pt-5 border-top">
@@ -217,7 +216,7 @@
                                 <a asp-controller="Catalogue" asp-action="Details" 
                                    asp-route-id="@item.Id" asp-route-type="@item.Type"
                                    class="btn btn-sm btn-orange w-100">
-                                    Voir dÃ©tails
+                                    Voir details
                                 </a>
                             </div>
                         </div>
@@ -228,7 +227,7 @@
     }
 </div>
 
-<!-- Scripts pour la page dÃ©tails -->
+
 @section Scripts {
     <script>
         let basePrice = @Model.Prix;
@@ -282,11 +281,11 @@
             if (icon.hasClass('far')) {
                 icon.removeClass('far').addClass('fas text-danger');
                 btn.addClass('active');
-                Swal.fire('AjoutÃ© !', 'Produit ajoutÃ© Ã  votre liste de souhaits', 'success');
+                Swal.fire('Ajoute !', 'Produit ajoute à votre liste de souhaits', 'success');
             } else {
                 icon.removeClass('fas text-danger').addClass('far');
                 btn.removeClass('active');
-                Swal.fire('RetirÃ© !', 'Produit retirÃ© de votre liste', 'info');
+                Swal.fire('Retirer !', 'Produit retire de votre liste', 'info');
             }
         });
 
@@ -299,7 +298,7 @@
                 html: `
                     <div class="text-start">
                         <p><strong>@Model.Nom</strong></p>
-                        <p>QuantitÃ© : ${quantity}</p>
+                        <p>Quantite : ${quantity}</p>
                         <p>Total : <span class="text-vert fw-bold">${$('#totalPrice').text()}</span></p>
                     </div>
                 `,
