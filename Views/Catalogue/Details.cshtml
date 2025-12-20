@@ -13,7 +13,7 @@
         </ol>
     </nav>
 
-    <form asp-action="Payer" asp-controller="Paiement" method="post" id="orderForm">
+    <form asp-action="TraiterPaiement" asp-controller="Paiement" method="post" id="orderForm">
         @Html.AntiForgeryToken()
         <input type="hidden" name="ProduitId" value="@Model.Id" />
         <input type="hidden" name="Type" value="@Model.Type" />
@@ -136,7 +136,7 @@
                         }
                     </div>
 
-                    <!-- SECTION ACTIONS CORRIGÉE -->
+                    
                     <div class="actions-section">
                         <div class="row g-3 align-items-center mb-4">
                             <div class="col-auto">
@@ -163,7 +163,7 @@
                             </div>
                         </div>
 
-                        <!-- BOUTONS D'ACTION -->
+                       
                         <div class="d-flex flex-wrap gap-3">
                             <button type="submit" class="btn btn-orange btn-lg flex-grow-1 py-3">
                                 <i class="fas fa-credit-card me-2"></i>
@@ -184,7 +184,7 @@
                             </button>
                         </div>
                     </div>
-                    <!-- FIN SECTION ACTIONS -->
+                 
                 </div>
             </div>
         </div>
@@ -307,7 +307,7 @@
                 showCancelButton: true,
                 confirmButtonText: 'Payer maintenant',
                 cancelButtonText: 'Modifier',
-                confirmButtonColor: 'var(--primary)'
+                confirmButtonColor: 'var(--bs-orange)'
             }).then((result) => {
                 if (result.isConfirmed) {
                     // IMPORTANT : Ajoutez les compléments sélectionnés au formulaire
