@@ -1,8 +1,77 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Accueil - Brasil Burger";
+    Layout = "_Layout";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="hero-section mb-5">
+                <h1 class="display-4 fw-bold text-orange mb-3">
+                    <i class="fas fa-hamburger"></i> Brasil Burger
+                </h1>
+                <p class="lead mb-4">
+                    Les meilleurs burgers brésiliens de Dakar, livrés directement chez vous !
+                </p>
+                
+                @if (!User.Identity?.IsAuthenticated == true)
+                {
+                    <div class="d-flex justify-content-center gap-3 mt-4">
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-orange btn-lg px-4">
+                            <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                        </a>
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-orange btn-lg px-4">
+                            <i class="fas fa-user-plus me-2"></i>S'inscrire
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="mt-4">
+                        <a asp-controller="Catalogue" asp-action="Index" class="btn btn-orange btn-lg px-4">
+                            <i class="fas fa-store me-2"></i>Voir le catalogue
+                        </a>
+                    </div>
+                }
+            </div>
+            
+            <div class="features-section row g-4 mt-5">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="icon-circle mb-3 mx-auto" style="width: 80px; height: 80px; background-color: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-burger text-orange fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold">Burgers Gourmets</h5>
+                            <p class="text-muted">Préparés avec des ingrédients frais et locaux</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="icon-circle mb-3 mx-auto" style="width: 80px; height: 80px; background-color: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-bolt text-orange fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold">Livraison Rapide</h5>
+                            <p class="text-muted">Livraison en moins de 45 minutes dans tout Dakar</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="icon-circle mb-3 mx-auto" style="width: 80px; height: 80px; background-color: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-shield-alt text-orange fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold">Paiement Sécurisé</h5>
+                            <p class="text-muted">Paiement par OM, Wave ou à la livraison</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

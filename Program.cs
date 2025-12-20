@@ -98,7 +98,7 @@ app.UseSession();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Catalogue}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // Tester la connexion à la base de données
 using (var scope = app.Services.CreateScope())

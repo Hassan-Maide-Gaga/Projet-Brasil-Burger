@@ -4,6 +4,7 @@ using brasilBurger.Models;
 
 namespace brasilBurger.Controllers
 {
+    [Authorize]
     public class CatalogueController : Controller
     {
         private readonly ICatalogueServices _catalogueServices;

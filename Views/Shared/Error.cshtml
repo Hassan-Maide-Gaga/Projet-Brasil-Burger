@@ -1,25 +1,34 @@
-﻿@model ErrorViewModel
-@{
-    ViewData["Title"] = "Error";
+﻿@{
+    ViewData["Title"] = "Erreur";
+    Layout = "_Layout";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
-
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
-
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white text-center">
+                    <h3><i class="fas fa-exclamation-triangle me-2"></i>Erreur</h3>
+                </div>
+                <div class="card-body text-center">
+                    <h4 class="text-danger mb-4">Une erreur s'est produite</h4>
+                    <p class="mb-4">Désolé, une erreur est survenue lors du traitement de votre demande.</p>
+                    
+                    @if (Model != null && !string.IsNullOrEmpty(Model.RequestId))
+                    {
+                        <p class="text-muted small">ID de requête: @Model.RequestId</p>
+                    }
+                    
+                    <div class="mt-4">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-orange me-2">
+                            <i class="fas fa-home me-1"></i>Retour à l'accueil
+                        </a>
+                        <a asp-controller="Catalogue" asp-action="Index" class="btn btn-outline-orange">
+                            <i class="fas fa-store me-1"></i>Voir le catalogue
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

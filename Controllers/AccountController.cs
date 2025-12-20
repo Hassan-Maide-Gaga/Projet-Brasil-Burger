@@ -67,7 +67,8 @@ namespace brasilBurger.Controllers
                     if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                         return Redirect(returnUrl);
                     
-                    return RedirectToAction("Index", "Home");
+                    // REDIRIGER VERS CATALOGUE AU LIEU DE HOME
+                    return RedirectToAction("Index", "Catalogue");
                 }
                 
                 ModelState.AddModelError(string.Empty, "Email ou mot de passe incorrect.");
@@ -146,7 +147,8 @@ namespace brasilBurger.Controllers
                     new ClaimsPrincipal(claimsIdentity),
                     authProperties);
 
-                return RedirectToAction("Index", "Home");
+               
+                return RedirectToAction("Index", "Catalogue");
             }
 
             return View(model);
