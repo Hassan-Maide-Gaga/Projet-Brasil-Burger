@@ -49,7 +49,7 @@
 /* Navigation fixe améliorée */
 .navbar.fixed-top {
     backdrop-filter: blur(10px);
-    background-color: rgba(175, 188, 32, 0.95) !important;
+    background-color: rgba(247, 180, 35, 0.95) !important;
 }
 
 /* Cartes compléments */
