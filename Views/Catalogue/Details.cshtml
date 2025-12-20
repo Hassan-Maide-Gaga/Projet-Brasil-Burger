@@ -13,7 +13,8 @@
         </ol>
     </nav>
 
-    <form asp-action="TraiterPaiement" asp-controller="Paiement" method="post" id="orderForm">
+    <form asp-action="Payer" asp-controller="Paiement" method="post" id="orderForm">
+
         @Html.AntiForgeryToken()
         <input type="hidden" name="ProduitId" value="@Model.Id" />
         <input type="hidden" name="Type" value="@Model.Type" />
@@ -305,17 +306,20 @@
                 `,
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Payer maintenant',
+                confirmButtonText: 'Continuer vers le paiement',
                 cancelButtonText: 'Modifier',
                 confirmButtonColor: 'var(--bs-orange)'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // IMPORTANT : Ajoutez les compléments sélectionnés au formulaire
+                    // Ajouter la quantité au formulaire
+                    $(this).append(`<input type="hidden" name="quantite" value="${quantity}" />`);
+                    
+                    // Ajouter les compléments sélectionnés
                     selectedComplements.forEach(compId => {
-                        $(this).append(`<input type="hidden" name="SelectedComplements" value="${compId}" />`);
+                        $(this).append(`<input type="hidden" name="complements" value="${compId}" />`);
                     });
                     
-                    // Soumet le formulaire
+                    // Soumettre le formulaire
                     this.submit();
                 }
             });

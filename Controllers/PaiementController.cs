@@ -1,5 +1,6 @@
 using brasilBurger.Data;
 using brasilBurger.Models;
+using brasilBurger.ViewModels;
 using brasilBurger.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -8,22 +9,21 @@ using Microsoft.Extensions.Logging;
 
 namespace brasilBurger.Controllers
 {
-    [Authorize] // Ajoutez cette ligne pour protéger l'accès
+    [Authorize]
     public class PaiementController : Controller
     {
         private readonly AppDbContext _context;
         private readonly ICommandeServices _commandeServices;
         private readonly ICatalogueServices _catalogueServices;
         private readonly IPaiementServices _paiementServices;
-        private readonly ILogger<PaiementController> _logger; // Changez le type
+        private readonly ILogger<PaiementController> _logger;
         
         public PaiementController(
             AppDbContext context,
-            ILogger<PaiementController> logger, // Changez ici aussi
+            ILogger<PaiementController> logger,
             ICommandeServices commandeServices, 
             ICatalogueServices catalogueServices, 
-            IPaiementServices paiementServices
-            )
+            IPaiementServices paiementServices)
         {
             _context = context;
             _commandeServices = commandeServices;
@@ -32,19 +32,21 @@ namespace brasilBurger.Controllers
             _logger = logger;
         }
         
+        // GET: /Paiement/Payer
         [HttpGet]
-        public IActionResult Payer(int produitId, string type, int quantite = 1)
+        public IActionResult Payer(int produitId, string type, int quantite = 1, List<int>? complements = null)
         {
-            // Action GET pour afficher la page de paiement
             try
             {
-                // Récupérer les informations du produit
+                // Récupérer le produit
                 var produit = _catalogueServices.GetItemById(produitId, type);
                 if (produit == null)
                 {
+                    TempData["ErrorMessage"] = "Produit introuvable";
                     return RedirectToAction("Index", "Catalogue");
                 }
                 
+                // Créer le ViewModel
                 var model = new PaiementVM
                 {
                     ProduitId = produitId,
@@ -52,10 +54,26 @@ namespace brasilBurger.Controllers
                     NomProduit = produit.Nom,
                     Quantite = quantite,
                     PrixProduit = produit.Prix,
-                    Total = produit.Prix * quantite
+                    Total = produit.Prix * quantite,
+                    ComplementIds = complements ?? new List<int>(),
+                    Complements = new List<Complement>()
                 };
                 
-                // Récupérer l'utilisateur connecté
+                // Ajouter les compléments
+                if (complements != null && complements.Any())
+                {
+                    foreach(var compId in complements)
+                    {
+                        var complement = _catalogueServices.GetComplementById(compId);
+                        if (complement != null)
+                        {
+                            model.Complements.Add(complement);
+                            model.Total += complement.Prix * quantite;
+                        }
+                    }
+                }
+                
+                // Récupérer l'utilisateur
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var user = _context.Users.Find(int.Parse(userId));
                 
@@ -66,78 +84,75 @@ namespace brasilBurger.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erreur lors de l'affichage de la page de paiement");
+                _logger.LogError(ex, "Erreur dans Payer GET");
+                TempData["ErrorMessage"] = "Une erreur est survenue";
                 return RedirectToAction("Index", "Catalogue");
             }
         }
-
         
-        // POST: /Paiement/Preparer - Pour rediriger depuis la page détail
+        // POST: /Paiement/Payer (depuis la page Payer.cshtml)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Preparer(int ProduitId, string Type, int Quantite, List<int> SelectedComplements)
+        public IActionResult Payer(
+            int ProduitId, 
+            string Type, 
+            int Quantite,
+            List<int>? SelectedComplements,
+            string Telephone,
+            string TypeCmd,
+            int? ZoneId,
+            string ModePaiement)
         {
-            try
-            {
-                // Construire l'URL avec les paramètres
-                var queryParams = new System.Text.StringBuilder();
-                queryParams.Append($"?produitId={ProduitId}&type={Type}&quantite={Quantite}");
-                
-                if (SelectedComplements != null && SelectedComplements.Count > 0)
-                {
-                    foreach (var compId in SelectedComplements)
-                    {
-                        queryParams.Append($"&complements={compId}");
-                    }
-                }
-                
-                return RedirectToAction("Payer", new 
-                { 
-                    produitId = ProduitId, 
-                    type = Type, 
-                    quantite = Quantite,
-                    complements = SelectedComplements 
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erreur dans Preparer");
-                return RedirectToAction("Details", "Catalogue", new { id = ProduitId, type = Type });
-            }
+            return TraiterPaiement(ProduitId, Type, Quantite, SelectedComplements, 
+                                  Telephone, TypeCmd, ZoneId, ModePaiement);
         }
-    
 
+        // POST: /Paiement/TraiterPaiement
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult TraiterPaiement(
             int ProduitId, 
             string Type, 
             int Quantite,
-            List<int> SelectedComplements,
+            List<int>? SelectedComplements,
             string Telephone,
             string TypeCmd,
             int? ZoneId,
-            string ModePaie)
+            string ModePaiement)
         {
             try
             {
-                // 1. Récupérer l'utilisateur connecté
+                // Validation
+                if (string.IsNullOrEmpty(Telephone) || string.IsNullOrEmpty(TypeCmd) || 
+                    string.IsNullOrEmpty(ModePaiement))
+                {
+                    TempData["ErrorMessage"] = "Veuillez remplir tous les champs obligatoires";
+                    return RedirectToAction("Payer", new { 
+                        produitId = ProduitId, 
+                        type = Type, 
+                        quantite = Quantite,
+                        complements = SelectedComplements 
+                    });
+                }
+                
+                // Récupérer l'utilisateur
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(userId))
                 {
                     return RedirectToAction("Login", "Account");
                 }
                 
-                // 2. Récupérer les informations du produit
+                // Récupérer le produit
                 var produit = _catalogueServices.GetItemById(ProduitId, Type);
                 if (produit == null)
                 {
+                    TempData["ErrorMessage"] = "Produit introuvable";
                     return RedirectToAction("Index", "Catalogue");
                 }
                 
-                // 3. Calculer le total
+                // Calculer le total
                 decimal total = produit.Prix * Quantite;
-                if (SelectedComplements != null && SelectedComplements.Count > 0)
+                if (SelectedComplements != null && SelectedComplements.Any())
                 {
                     foreach(var compId in SelectedComplements)
                     {
@@ -149,24 +164,38 @@ namespace brasilBurger.Controllers
                     }
                 }
                 
-                // 4. Créer la commande
-                var typeEnum = TypeCmd == "SUR_PLACE" ? TypeCommande.SUR_PLACE : 
-                              TypeCmd == "A_RECUPERER" ? TypeCommande.A_RECUPERER : 
-                              TypeCommande.LIVRAISON;
+                // Ajouter les frais de livraison si nécessaire
+                if (TypeCmd == "LIVRAISON" && ZoneId.HasValue)
+                {
+                    var zone = _context.Zones.Find(ZoneId.Value);
+                    if (zone != null && zone.PrixLivraison.HasValue)
+                    {
+                        total += zone.PrixLivraison.Value;
+                    }
+                }
+                
+                // Créer la commande
+                var typeEnum = TypeCmd switch
+                {
+                    "SUR_PLACE" => TypeCommande.SUR_PLACE,
+                    "A_RECUPERER" => TypeCommande.A_RECUPERER,
+                    "LIVRAISON" => TypeCommande.LIVRAISON,
+                    _ => TypeCommande.SUR_PLACE
+                };
                 
                 var cmd = new Commande
                 {
-                    DateCommande = DateTime.UtcNow,
+                    DateCommande = DateTime.Now,
                     Etat = EtatCommande.EN_ATTENTE,
                     Type = typeEnum,
-                    ClientId = int.Parse(userId), // Utilisez l'ID de l'utilisateur connecté
+                    ClientId = int.Parse(userId),
                     ZoneId = TypeCmd == "LIVRAISON" ? ZoneId : null,
                     MontantTotal = total
                 };
                 
                 _commandeServices.CreateCommande(cmd);
                 
-                // 5. Ajouter l'item principal
+                // Ajouter l'item principal
                 var item = new CommandeItem
                 {
                     CommandeId = cmd.Id,
@@ -177,8 +206,8 @@ namespace brasilBurger.Controllers
                 };
                 _commandeServices.CreateCommandeItem(item);
                 
-                // 6. Ajouter les compléments
-                if (SelectedComplements != null && SelectedComplements.Count > 0)
+                // Ajouter les compléments
+                if (SelectedComplements != null && SelectedComplements.Any())
                 {
                     foreach(var compId in SelectedComplements)
                     {
@@ -198,17 +227,19 @@ namespace brasilBurger.Controllers
                     }
                 }
                 
-                // 7. Créer le paiement
+                // Créer le paiement
+                var modePaie = ModePaiement == "WAVE" ? ModePaiement.WAVE : ModePaiement.OM;
                 var paiement = new Paiement
                 {
                     CommandeId = cmd.Id,
-                    DatePaiement = DateTime.UtcNow,
+                    DatePaiement = DateTime.Now,
                     Montant = total,
-                    Mode = ModePaie == "WAVE" ? ModePaiement.WAVE : ModePaiement.OM,
+                    Mode = modePaie,
                     Statut = "EN_ATTENTE"
                 };
                 _paiementServices.CreatePaiement(paiement);
                 
+                TempData["SuccessMessage"] = "Commande créée avec succès !";
                 return RedirectToAction("Details", "Commande", new { id = cmd.Id });
             }
             catch (Exception ex)

@@ -1,102 +1,153 @@
-﻿using brasilBurger.Models;
-using brasilBurger.Services;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using brasilBurger.Data;
+using brasilBurger.Models;
+using System.Security.Claims;
+
 namespace brasilBurger.Controllers
 {
     [Authorize]
     public class CommandeController : Controller
     {
+        private readonly AppDbContext _context;
         private readonly ILogger<CommandeController> _logger;
-        private readonly ICatalogueServices _catalogueServices;
-        private readonly ICommandeServices _commandeServices;
-        private readonly IUserServices _userServices;
-        public CommandeController(ICommandeServices commandeServices, ILogger<CommandeController> logger, ICatalogueServices cata, IUserServices userServices)
+        
+        public CommandeController(AppDbContext context, ILogger<CommandeController> logger)
         {
+            _context = context;
             _logger = logger;
-            _commandeServices = commandeServices;
-            _catalogueServices = cata;
-            _userServices = userServices;
         }
-        [HttpPost]
-        public IActionResult Commander(int ProduitId, string Type, List<int> SelectedComplements, int _Quantite)
+        
+        // GET: Commande/Index
+        public IActionResult Index(string etat = "all", int page = 1)
         {
             try
             {
-                CatalogueItemVM item = null;
-                if(Type == "Burger")
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
                 {
-                    item = _catalogueServices.GetItemById(ProduitId, "burger");
-                }else if(Type == "Menu")
-                {
-                    item = _catalogueServices.GetItemById(ProduitId, "Menu");
+                    return RedirectToAction("Login", "Account");
                 }
-                var complements = _catalogueServices.GetComplements()
-                    .Where(c => SelectedComplements.Contains(c.Id))
-                    .ToList();
-                var zones = _catalogueServices.GetZones();
-                ViewBag.Zones = zones;
-                var paiementVM = new PaiementVM
+                
+                // CORRECTION : Charger les relations avec Include
+                var query = _context.Commandes
+                    .Include(c => c.Client)           // Charger le client
+                    .Include(c => c.Zone)             // Charger la zone
+                    .Include(c => c.CommandeItems)    // IMPORTANT : Charger les items !
+                    .Include(c => c.Paiements)        // Charger les paiements
+                    .Where(c => c.ClientId == int.Parse(userId));
+                
+                // Filtrer par état si nécessaire
+                if (etat != "all" && !string.IsNullOrEmpty(etat))
                 {
-                    ProduitId = item.Id,
-                    Type = item.Type,
-                    NomProduit = item.Nom,
-                    PrixProduit = item.Prix,
-                    Complements = complements,
-                    Quantite = _Quantite<=0 ? _Quantite : 1,
-                    Total = (item.Prix * _Quantite) + complements.Sum(c => c.Prix),
-                    ComplementIds = complements.Select(c => c.Id).ToList()
-                };
-                ViewBag.Client = _userServices.GetUserByIdAsync(1);
-                if(item == null)
-                    return RedirectToAction("Index", "Catalogue");
-                return View("Paiement",paiementVM);
-            }catch (Exception)
-            {
-                _logger.LogError("Erreur lors de la commande");
-                return RedirectToAction("Index", "Catalogue");
-            }
-        }
-        [HttpGet]
-        public IActionResult Index(int page=1, String etat="all")
-        {
-            try
-            {
-                var commandes = _commandeServices.GetCommandesByClient(1,page,etat); 
+                    if (Enum.TryParse<EtatCommande>(etat, out var etatEnum))
+                    {
+                        query = query.Where(c => c.Etat == etatEnum);
+                    }
+                }
+                
+                // Pagination
+                int pageSize = 10;
+                var totalItems = query.Count();
+                var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+                
+                var commandes = query
+                    .OrderByDescending(c => c.DateCommande)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+                
                 ViewBag.CurrentPage = page;
-                ViewBag.TotalPages = (int)Math.Ceiling(
-                    (double)_commandeServices.CountTotal(1,etat) / 4
-                );
+                ViewBag.TotalPages = totalPages;
                 ViewBag.SelectedEtat = etat;
+                
                 return View(commandes);
-            }catch (Exception)
+            }
+            catch (Exception ex)
             {
-                _logger.LogError("Erreur lors de l'affichage des commandes");
+                _logger.LogError(ex, "Erreur lors du chargement des commandes");
+                TempData["ErrorMessage"] = "Une erreur est survenue lors du chargement des commandes";
                 return View(new List<Commande>());
             }
         }
-        [HttpGet]
+        
+        // GET: Commande/Details/5
         public IActionResult Details(int id)
         {
             try
             {
-                var commande = _commandeServices.GetCommandeById(id);
-                if(commande == null) 
-                    commande = new Commande();
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+                
+                // CORRECTION : Charger toutes les relations nécessaires
+                var commande = _context.Commandes
+                    .Include(c => c.Client)           // Charger le client
+                    .Include(c => c.Zone)             // Charger la zone
+                    .Include(c => c.CommandeItems)    // IMPORTANT : Charger les items !
+                    .Include(c => c.Paiements)        // Charger les paiements
+                    .FirstOrDefault(c => c.Id == id && c.ClientId == int.Parse(userId));
+                
+                if (commande == null)
+                {
+                    TempData["ErrorMessage"] = "Commande introuvable";
+                    return RedirectToAction("Index");
+                }
+                
                 return View(commande);
-            }catch (Exception)
+            }
+            catch (Exception ex)
             {
-                _logger.LogError("Erreur lors de l'affichage de la commande");
-                return View(new Commande());
+                _logger.LogError(ex, "Erreur lors du chargement des détails de la commande");
+                TempData["ErrorMessage"] = "Une erreur est survenue";
+                return RedirectToAction("Index");
             }
         }
-
-             
-
-            [Authorize(Roles = "Admin")] 
-            public IActionResult AdminPanel()
+        
+        // POST: Commande/Annuler/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Annuler(int id)
+        {
+            try
             {
-                return View();
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+                
+                var commande = _context.Commandes
+                    .FirstOrDefault(c => c.Id == id && c.ClientId == int.Parse(userId));
+                
+                if (commande == null)
+                {
+                    TempData["ErrorMessage"] = "Commande introuvable";
+                    return RedirectToAction("Index");
+                }
+                
+                // Vérifier si la commande peut être annulée
+                if (commande.Etat == EtatCommande.TERMINEE || commande.Etat == EtatCommande.ANNULEE)
+                {
+                    TempData["ErrorMessage"] = "Cette commande ne peut pas être annulée";
+                    return RedirectToAction("Details", new { id });
+                }
+                
+                commande.Etat = EtatCommande.ANNULEE;
+                _context.SaveChanges();
+                
+                TempData["SuccessMessage"] = "Commande annulée avec succès";
+                return RedirectToAction("Details", new { id });
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors de l'annulation de la commande");
+                TempData["ErrorMessage"] = "Une erreur est survenue";
+                return RedirectToAction("Index");
+            }
+        }
     }
 }
