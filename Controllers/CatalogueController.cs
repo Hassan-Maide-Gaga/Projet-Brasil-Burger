@@ -1,8 +1,10 @@
 using brasilBurger.Services;
-using System;
 using Microsoft.AspNetCore.Mvc;
-using brasilBurger.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace brasilBurger.Controllers
 {
@@ -16,8 +18,8 @@ namespace brasilBurger.Controllers
         {
             _logger = logger;
             _catalogueServices = catSer;
-            
         }
+        
         [HttpGet]
         public IActionResult Index(int page = 1, string type = "all")
         {
@@ -31,9 +33,9 @@ namespace brasilBurger.Controllers
                 ViewBag.SelectedType = type;
                 return View(catalogue);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _logger.LogError("Erreur lors de l'affichage du catalogue");
+                _logger.LogError(ex, "Erreur lors de l'affichage du catalogue");
                 return View(new List<CatalogueItemVM>());
             }
         }
@@ -49,22 +51,26 @@ namespace brasilBurger.Controllers
                     .Where(i => i.Id != id)
                     .Where(i => i.Type == type)
                     .ToList();
-                if(type.ToLower() == "menu")
+                    
+                if (type.ToLower() == "menu")
                 {
                     var menuComplements = _catalogueServices.GetComplementsByMenu(id);
                     ViewBag.MenuComplements = menuComplements;
                 }
+                
                 ViewBag.Complements = complements;
                 ViewBag.Similaires = similaires;
+                
                 if (item == null)
                 {
                     _logger.LogWarning("Item not found: Id={Id}, Type={Type}", id, type);
                     return NotFound();
                 }
                 return View(item);
-            }catch (Exception)
+            }
+            catch (Exception ex)
             {
-                _logger.LogError("Erreur lors de l'affichage du produit");
+                _logger.LogError(ex, "Erreur lors de l'affichage du produit");
                 return View(new CatalogueItemVM());
             }
         }

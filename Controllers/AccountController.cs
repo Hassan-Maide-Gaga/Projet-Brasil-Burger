@@ -25,7 +25,7 @@ namespace brasilBurger.Controllers
 
         // GET: /Account/Login
         [AllowAnonymous]
-        public IActionResult Login(string returnUrl = null)
+        public IActionResult Login(string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
@@ -35,7 +35,7 @@ namespace brasilBurger.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             if (ModelState.IsValid)
             {
@@ -65,10 +65,13 @@ namespace brasilBurger.Controllers
                         authProperties);
 
                     if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    {
                         return Redirect(returnUrl);
-                    
-                    // REDIRIGER VERS CATALOGUE AU LIEU DE HOME
-                    return RedirectToAction("Index", "Catalogue");
+                    }
+                    else
+                    {
+                        return RedirectToAction("Index", "Catalogue");
+                    }
                 }
                 
                 ModelState.AddModelError(string.Empty, "Email ou mot de passe incorrect.");
@@ -91,7 +94,6 @@ namespace brasilBurger.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Vérifier si l'email existe déjà
                 var existingUser = await _context.Users
                     .FirstOrDefaultAsync(u => u.Email == model.Email);
                 
@@ -101,7 +103,6 @@ namespace brasilBurger.Controllers
                     return View(model);
                 }
 
-                // Vérifier si le téléphone existe déjà
                 var existingPhone = await _context.Users
                     .FirstOrDefaultAsync(u => u.Telephone == model.Telephone);
                 
@@ -111,7 +112,6 @@ namespace brasilBurger.Controllers
                     return View(model);
                 }
 
-                // Créer le nouvel utilisateur
                 var user = new User
                 {
                     NomComplet = $"{model.Prenom} {model.Nom}",
@@ -126,7 +126,6 @@ namespace brasilBurger.Controllers
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
-                // Connecter automatiquement l'utilisateur après l'inscription
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -147,7 +146,6 @@ namespace brasilBurger.Controllers
                     new ClaimsPrincipal(claimsIdentity),
                     authProperties);
 
-               
                 return RedirectToAction("Index", "Catalogue");
             }
 

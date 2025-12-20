@@ -5,7 +5,6 @@
 @model CatalogueItemVM
 
 <div class="container py-4">
-  
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a asp-controller="Catalogue" asp-action="Index">Catalogue</a></li>
@@ -20,7 +19,6 @@
         <input type="hidden" name="Type" value="@Model.Type" />
         
         <div class="row g-4">
-          
             <div class="col-lg-6">
                 <div class="product-image-main card border-0 shadow-sm overflow-hidden">
                     <img src="@Model.Image" alt="@Model.Nom" 
@@ -35,7 +33,6 @@
                     }
                 </div>
                 
-              
                 <div class="row g-2 mt-3">
                     @for (int i = 0; i < 3; i++)
                     {
@@ -49,7 +46,6 @@
                 </div>
             </div>
 
-        
             <div class="col-lg-6">
                 <div class="product-details">
                     <span class="badge @(Model.Type == "Burger" ? "badge-vert" : "badge-bleu") fs-6 mb-3">
@@ -58,7 +54,6 @@
                     
                     <h1 class="fw-bold mb-3">@Model.Nom</h1>
                     
-                  
                     <div class="rating mb-3">
                         <div class="d-flex align-items-center mb-2">
                             <div class="star-rating me-2">
@@ -71,7 +66,6 @@
                         </div>
                     </div>
 
-                   
                     <div class="mb-4">
                         <h5 class="fw-semibold mb-2">Description</h5>
                         <p class="text-muted">Délicieux produit de notre carte.</p>
@@ -90,7 +84,6 @@
                         </div>
                     </div>
 
-                    
                     <div class="complements-section mb-4">
                         <h5 class="fw-semibold mb-3">
                             <i class="fas fa-plus-circle me-2 text-vert"></i>
@@ -143,7 +136,6 @@
                         }
                     </div>
 
-                    
                     <div class="actions-section">
                         <div class="row g-3 align-items-center mb-4">
                             <div class="col-auto">
@@ -170,7 +162,6 @@
                             </div>
                         </div>
 
-                        <!-- Boutons d'action -->
                         <div class="d-flex flex-wrap gap-3">
                             <button type="submit" class="btn btn-orange btn-lg flex-grow-1 py-3">
                                 <i class="fas fa-shopping-cart me-2"></i>
@@ -192,7 +183,6 @@
         </div>
     </form>
 
-  
     @if (ViewBag.Similaires != null && (ViewBag.Similaires as List<CatalogueItemVM>).Any())
     {
         <section class="similar-products mt-5 pt-5 border-top">
@@ -227,7 +217,6 @@
     }
 </div>
 
-
 @section Scripts {
     <script>
         let basePrice = @Model.Prix;
@@ -237,18 +226,15 @@
         function updateTotal() {
             let total = basePrice * quantity;
             
-            // Ajouter prix des complÃ©ments
             selectedComplements.forEach(compId => {
                 const compPrice = document.querySelector(`[data-price][value="${compId}"]`)?.dataset.price || 0;
                 total += parseInt(compPrice) * quantity;
             });
             
-            // Mettre Ã  jour l'affichage
             $('#totalPrice').text(total.toLocaleString('fr-FR') + ' FCFA');
             $('#dynamicTotal').text(total.toLocaleString('fr-FR') + ' FCFA');
         }
 
-        // Gestion quantitÃ©
         $('#increaseQty').click(() => {
             quantity++;
             $('#quantityInput').val(quantity);
@@ -263,7 +249,6 @@
             }
         });
 
-        // Gestion complÃ©ments
         $('input[name="SelectedComplements"]').change(function() {
             if (this.checked) {
                 selectedComplements.add(this.value);
@@ -273,7 +258,6 @@
             updateTotal();
         });
 
-        // Wishlist
         $('#wishlistBtn').click(function() {
             const btn = $(this);
             const icon = btn.find('i');
@@ -289,7 +273,6 @@
             }
         });
 
-        // Soumission du formulaire avec confirmation
         $('#orderForm').submit(function(e) {
             e.preventDefault();
             
