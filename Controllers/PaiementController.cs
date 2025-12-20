@@ -75,7 +75,7 @@ namespace brasilBurger.Controllers
                 
                 // Récupérer l'utilisateur
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var user = _context.Users.Find(int.Parse(userId));
+                var user = _context.Users.Find(int.Parse(userId!));
                 
                 ViewBag.Client = user;
                 ViewBag.Zones = _context.Zones.Where(z => z.Etat).ToList();
@@ -168,9 +168,9 @@ namespace brasilBurger.Controllers
                 if (TypeCmd == "LIVRAISON" && ZoneId.HasValue)
                 {
                     var zone = _context.Zones.Find(ZoneId.Value);
-                    if (zone != null && zone.PrixLivraison.HasValue)
+                    if (zone != null && zone.PrixLivraison > 0)
                     {
-                        total += zone.PrixLivraison.Value;
+                        total += zone.PrixLivraison;
                     }
                 }
                 
@@ -227,7 +227,7 @@ namespace brasilBurger.Controllers
                     }
                 }
                 
-                // Créer le paiement
+                // Créer le paiement - CORRECTION ICI
                 var modePaie = ModePaiement == "WAVE" ? ModePaiement.WAVE : ModePaiement.OM;
                 var paiement = new Paiement
                 {

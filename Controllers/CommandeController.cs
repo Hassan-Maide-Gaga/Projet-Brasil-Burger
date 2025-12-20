@@ -30,12 +30,11 @@ namespace brasilBurger.Controllers
                     return RedirectToAction("Login", "Account");
                 }
                 
-                // CORRECTION : Charger les relations avec Include
+                // CORRECTION : Charger les relations avec Include (sans Paiements si la propriété n'existe pas)
                 var query = _context.Commandes
                     .Include(c => c.Client)           // Charger le client
                     .Include(c => c.Zone)             // Charger la zone
                     .Include(c => c.CommandeItems)    // IMPORTANT : Charger les items !
-                    .Include(c => c.Paiements)        // Charger les paiements
                     .Where(c => c.ClientId == int.Parse(userId));
                 
                 // Filtrer par état si nécessaire
@@ -83,12 +82,11 @@ namespace brasilBurger.Controllers
                     return RedirectToAction("Login", "Account");
                 }
                 
-                // CORRECTION : Charger toutes les relations nécessaires
+                // CORRECTION : Charger toutes les relations nécessaires (sans Paiements si la propriété n'existe pas)
                 var commande = _context.Commandes
                     .Include(c => c.Client)           // Charger le client
                     .Include(c => c.Zone)             // Charger la zone
                     .Include(c => c.CommandeItems)    // IMPORTANT : Charger les items !
-                    .Include(c => c.Paiements)        // Charger les paiements
                     .FirstOrDefault(c => c.Id == id && c.ClientId == int.Parse(userId));
                 
                 if (commande == null)
