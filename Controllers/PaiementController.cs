@@ -101,10 +101,10 @@ namespace brasilBurger.Controllers
             string Telephone,
             string TypeCmd,
             int? ZoneId,
-            string ModePaiement)
+            string ModePaie)
         {
             return TraiterPaiement(ProduitId, Type, Quantite, SelectedComplements, 
-                                  Telephone, TypeCmd, ZoneId, ModePaiement);
+                                  Telephone, TypeCmd, ZoneId, ModePaie);
         }
 
         // POST: /Paiement/TraiterPaiement
@@ -118,13 +118,13 @@ namespace brasilBurger.Controllers
             string Telephone,
             string TypeCmd,
             int? ZoneId,
-            string ModePaiement)
+            string ModePaie)
         {
             try
             {
                 // Validation
                 if (string.IsNullOrEmpty(Telephone) || string.IsNullOrEmpty(TypeCmd) || 
-                    string.IsNullOrEmpty(ModePaiement))
+                    string.IsNullOrEmpty(ModePaie))
                 {
                     TempData["ErrorMessage"] = "Veuillez remplir tous les champs obligatoires";
                     return RedirectToAction("Payer", new { 
@@ -227,14 +227,14 @@ namespace brasilBurger.Controllers
                     }
                 }
                 
-                // Créer le paiement - CORRECTION ICI
-                var modePaie = ModePaiement == "WAVE" ? ModePaiement.WAVE : ModePaiement.OM;
+                // Créer le paiement - CORRECTION : utiliser l'enum avec le bon nom
+                var modeEnum = ModePaie == "WAVE" ? ModePaiement.WAVE : ModePaiement.OM;
                 var paiement = new Paiement
                 {
                     CommandeId = cmd.Id,
                     DatePaiement = DateTime.Now,
                     Montant = total,
-                    Mode = modePaie,
+                    Mode = modeEnum,
                     Statut = "EN_ATTENTE"
                 };
                 _paiementServices.CreatePaiement(paiement);
