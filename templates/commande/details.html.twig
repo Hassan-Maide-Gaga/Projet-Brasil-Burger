@@ -147,7 +147,7 @@
 {% endblock %}
 
 {% block body %}
-    <!-- En-tête de la commande -->
+
     <div class="order-details-header">
         <div class="d-flex justify-content-between align-items-start">
             <div>
@@ -164,7 +164,7 @@
         </div>
     </div>
     
-    <!-- Actions -->
+
     <div class="action-bar">
         <a href="{{ path('app_commande_terminer', {'id': commande.id}) }}" 
            class="btn btn-success btn-modern">
