@@ -1,0 +1,251 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard - Brasil Burger{% endblock %}
+
+{% block customStylesheets %}
+    .dashboard-header {
+        margin-bottom: 2.5rem;
+    }
+    
+    .dashboard-header h1 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        color: var(--dark);
+        position: relative;
+        display: inline-block;
+    }
+    
+    .dashboard-header h1::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: var(--second);
+        border-radius: 2px;
+    }
+    
+    .stat-card-enhanced {
+        background: white;
+        border-radius: 16px;
+        padding: 1.75rem;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border: none;
+        height: 100%;
+    }
+    
+    .stat-card-enhanced:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    .stat-icon-modern {
+        width: 60px;
+        height: 60px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        margin-bottom: 1.25rem;
+        color: white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-value-modern {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0.5rem 0;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .stat-trend {
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .trend-up { color: var(--primary); }
+    .trend-down { color: var(--red); }
+    
+    .recent-orders-modern {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .order-item-modern {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--gray);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+    }
+    
+    .order-item-modern:hover {
+        background: var(--gray-light);
+        transform: translateX(5px);
+    }
+    
+    .order-badge-modern {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+    
+    .view-all-btn {
+        padding: 0.875rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        background: var(--primary);
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .view-all-btn:hover {
+        background: var(--blue);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(1, 73, 124, 0.2);
+    }
+{% endblock %}
+
+{% block body %}
+    <div class="dashboard-header">
+        <h1>Tableau de Bord</h1>
+        <p class="text-muted mt-3">Bienvenue dans votre espace de gestion Brasil Burger</p>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-xl-3 col-lg-6">
+            <div class="stat-card-enhanced">
+                <div class="stat-icon-modern icon-orange">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h6 class="stat-label">EN COURS</h6>
+                <div class="stat-value-modern">{{ enCours }}</div>
+                <div class="stat-trend trend-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+12% cette semaine</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6">
+            <div class="stat-card-enhanced">
+                <div class="stat-icon-modern icon-green">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h6 class="stat-label">VALIDÉES</h6>
+                <div class="stat-value-modern">{{ validees }}</div>
+                <div class="stat-trend trend-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+8% cette semaine</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6">
+            <div class="stat-card-enhanced">
+                <div class="stat-icon-modern icon-blue">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <h6 class="stat-label">RECETTES</h6>
+                <div class="stat-value-modern">{{ recettes|number_format(0, ' ', ' ') }} FCFA</div>
+                <div class="stat-trend trend-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+15% cette semaine</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6">
+            <div class="stat-card-enhanced">
+                <div class="stat-icon-modern icon-red">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <h6 class="stat-label">ANNULÉES</h6>
+                <div class="stat-value-modern">{{ annulees }}</div>
+                <div class="stat-trend trend-down">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>-5% cette semaine</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Commandes Récentes -->
+    <div class="recent-orders-modern">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0">
+                <i class="fas fa-receipt me-2 text-primary"></i>
+                Commandes Récentes
+            </h4>
+            <span class="badge bg-primary">24 dernières heures</span>
+        </div>
+        
+        <div class="orders-list">
+            {% for commande in commandes %}
+                <div class="order-item-modern">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="order-icon">
+                            <div class="bg-light rounded-circle p-2">
+                                <i class="fas fa-shopping-bag text-primary"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="order-id fw-bold">#CMD-{{ commande.id }}</div>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ commande.dateCommande|date('d/m/Y H:i') }}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="text-end">
+                        <div class="fw-bold fs-5">
+                            {{ commande.montantTotal|number_format(0, ' ', ' ') }} FCFA
+                        </div>
+                        {% if commande.etat.value == 'en_cours' %}
+                            <span class="order-badge-modern bg-warning text-dark">
+                                <i class="fas fa-sync-alt me-1"></i> En cours
+                            </span>
+                        {% elseif commande.etat.value == 'terminee' %}
+                            <span class="order-badge-modern bg-success text-white">
+                                <i class="fas fa-check me-1"></i> Validée
+                            </span>
+                        {% elseif commande.etat.value == 'en_attente' %}
+                            <span class="order-badge-modern bg-info text-white">
+                                <i class="fas fa-hourglass-half me-1"></i> En Attente
+                            </span>
+                        {% else %}
+                            <span class="order-badge-modern bg-danger text-white">
+                                <i class="fas fa-times me-1"></i> Annulée
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Aucune commande récente</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{{ path('app_commande_list') }}" class="btn view-all-btn">
+                <i class="fas fa-list me-2"></i>Voir toutes les commandes
+            </a>
+        </div>
+    </div>
+{% endblock %}

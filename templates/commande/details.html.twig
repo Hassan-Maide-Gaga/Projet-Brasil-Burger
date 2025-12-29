@@ -1,0 +1,330 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails Commande #{{ commande.id }} - Brasil Burger{% endblock %}
+
+{% block customStylesheets %}
+    .order-details-header {
+        background: linear-gradient(135deg, var(--primary) 0%, #488e19ff 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .order-details-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        transform: translate(30%, -30%);
+    }
+    
+    .order-id-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+    
+    .action-bar {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-bottom: 2rem;
+    }
+    
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .details-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid var(--gray);
+    }
+    
+    .details-card h5 {
+        color: var(--primary);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--gray);
+        font-weight: 600;
+    }
+    
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--gray-light);
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        color: var(--dark);
+        font-weight: 500;
+    }
+    
+    .info-value {
+        color: var(--dark);
+        font-weight: 600;
+    }
+    
+    .products-list {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .product-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid var(--gray-light);
+        transition: all 0.2s ease;
+    }
+    
+    .product-item:hover {
+        background: var(--gray-light);
+        border-radius: 8px;
+    }
+    
+    .product-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .product-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--gray-light);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+    }
+    
+    .total-card {
+        background: linear-gradient(135deg, var(--second) 0%, var(--third) 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        color: white;
+        text-align: center;
+    }
+    
+    .total-label {
+        font-size: 1.25rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        opacity: 0.9;
+    }
+    
+    .total-amount {
+        font-size: 3rem;
+        font-weight: 700;
+        font-family: 'Poppins', sans-serif;
+    }
+{% endblock %}
+
+{% block body %}
+    <!-- En-tête de la commande -->
+    <div class="order-details-header">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="fw-bold mb-2">Commande #{{ commande.id }}</h1>
+                <p class="mb-0 opacity-90">
+                    <i class="fas fa-calendar-alt me-1"></i>
+                    Créée le {{ commande.dateCommande|date('d/m/Y à H:i') }}
+                </p>
+            </div>
+            <div class="order-id-badge">
+                <i class="fas fa-hashtag me-1"></i>
+                REF: CMD-{{ commande.id }}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Actions -->
+    <div class="action-bar">
+        <a href="{{ path('app_commande_terminer', {'id': commande.id}) }}" 
+           class="btn btn-success btn-modern">
+            <i class="fas fa-check me-2"></i>Terminer la commande
+        </a>
+        <a href="{{ path('app_commande_annuler', {'id': commande.id}) }}" 
+           class="btn btn-danger btn-modern">
+            <i class="fas fa-times me-2"></i>Annuler la commande
+        </a>
+    </div>
+    
+
+    <div class="details-grid">
+
+        <div class="details-card">
+            <h5><i class="fas fa-user-circle me-2"></i>Informations Client</h5>
+            <div class="info-item">
+                <span class="info-label">Nom complet</span>
+                <span class="info-value">{{ commande.client.nomComplet }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Téléphone</span>
+                <span class="info-value">
+                    <a href="tel:{{ commande.client.telephone }}" class="text-decoration-none">
+                        {{ commande.client.telephone }}
+                    </a>
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Type de commande</span>
+                <span class="info-value">
+                    <span class="badge bg-info text-white">
+                        {{ commande.type.value|capitalize }}
+                    </span>
+                </span>
+            </div>
+        </div>
+        
+     
+        <div class="details-card">
+            <h5><i class="fas fa-info-circle me-2"></i>Statut de la commande</h5>
+            <div class="info-item">
+                <span class="info-label">État actuel</span>
+                <span class="info-value">
+                    {% if commande.etat.value == 'EN_COURS' %}
+                        <span class="badge bg-warning text-dark p-2">
+                            <i class="fas fa-sync-alt me-1"></i>En cours
+                        </span>
+                    {% elseif commande.etat.value == 'TERMINEE' %}
+                        <span class="badge bg-success text-white p-2">
+                            <i class="fas fa-check me-1"></i>Terminée
+                        </span>
+                    {% elseif commande.etat.value == 'ANNULEE' %}
+                        <span class="badge bg-danger text-white p-2">
+                            <i class="fas fa-times me-1"></i>Annulée
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary text-white p-2">
+                            <i class="fas fa-hourglass-half me-1"></i>En attente
+                        </span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Date de création</span>
+                <span class="info-value">{{ commande.dateCommande|date('d/m/Y H:i') }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Dernière mise à jour</span>
+                <span class="info-value">{{ commande.dateCommande|date('d/m/Y H:i') }}</span>
+            </div>
+        </div>
+    </div>
+    
+
+    <div class="products-list">
+        <h5 class="fw-bold mb-4">
+            <i class="fas fa-shopping-bag me-2 text-primary"></i>
+            Produits commandés
+        </h5>
+        
+        {% for item in commande.commandeItems %}
+            <div class="product-item">
+                <div class="product-info">
+                    <div class="product-icon">
+                        <i class="fas fa-hamburger"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1 fw-bold">Produit #{{ item.produitId }}</h6>
+                        <small class="text-muted">
+                            <i class="fas fa-hashtag me-1"></i>ID: {{ item.produitId }}
+                        </small>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div class="mb-1">
+                        <span class="fw-bold">{{ item.quantite }} ×</span>
+                        <span>{{ item.prixUnitaire|number_format(0, ' ', ' ') }} FCFA</span>
+                    </div>
+                    <div class="fw-bold fs-5 text-primary">
+                        {{ (item.prixUnitaire * item.quantite)|number_format(0, ' ', ' ') }} FCFA
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    >
+    <div class="total-card">
+        <div class="total-label">TOTAL DE LA COMMANDE</div>
+        <div class="total-amount">{{ commande.montantTotal|number_format(0, ' ', ' ') }} FCFA</div>
+        <p class="mt-3 opacity-90">
+            <i class="fas fa-info-circle me-1"></i>
+            Montant total à payer pour cette commande
+        </p>
+    </div>
+    
+
+    <div class="text-center mt-4">
+        <a href="{{ path('app_commande_list') }}" class="btn btn-outline-primary btn-modern">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste des commandes
+        </a>
+    </div>
+    
+    <style>
+        .btn-modern {
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--primary) 0%, #007A3D 100%);
+            border: none;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 159, 77, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--red) 0%, #C82333 100%);
+            border: none;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(220, 53, 69, 0.3);
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            color: white;
+        }
+    </style>
+{% endblock %}
