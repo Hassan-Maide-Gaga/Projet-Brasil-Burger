@@ -23,6 +23,3 @@
 /var/
 /vendor/
 
-# MAIS forcez l'ajout des templates
-!templates/security/login.html.twig
-!templates/base.html.twig
