@@ -1,0 +1,77 @@
+{% extends 'auth.html.twig' %}
+
+{% block title %}Connexion - Brasil Burger{% endblock %}
+
+{% block body %}
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+    <div class="card border-0 shadow-lg" style="max-width: 400px; width: 100%; border-radius: 15px;">
+        <div class="card-body p-4">
+            <!-- Logo -->
+            <div class="text-center mb-4">
+                <h2 class="fw-bold" style="color: rgba(247, 180, 35, 0.95);">
+                    <i class="fas fa-burger"></i> Brasil Burger
+                </h2>
+            </div>
+            
+            <!-- Titre -->
+            <h4 class="text-center mb-3">Connexion</h4>
+            
+            {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show py-2" role="alert">
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endif %}
+            
+            <!-- Formulaire -->
+            <form method="post" action="{{ path('app_login') }}">
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input
+                        type="email"
+                        name="email"
+                        class="form-control"
+                        placeholder="exemple@brasil.com"
+                        value="{{ last_username }}"
+                        required
+                        autofocus
+                        id="inputEmail"
+                        autocomplete="email"
+                    >
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label">Mot de passe</label>
+                    <input
+                        type="password"
+                        name="password"
+                        class="form-control"
+                        placeholder="••••••••"
+                        required
+                        id="inputPassword"
+                        autocomplete="current-password"
+                    >
+                </div>
+                
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                
+                <button type="submit" class="btn w-100 py-2" style="background-color: rgba(247, 180, 35, 0.95); color: white; font-weight: 600;">
+                    Se connecter
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.btn:hover {
+    background-color: rgba(247, 180, 35, 1) !important;
+    color: white !important;
+}
+
+.form-control:focus {
+    border-color: rgba(247, 180, 35, 0.5);
+    box-shadow: 0 0 0 0.2rem rgba(247, 180, 35, 0.25);
+}
+</style>
+{% endblock %}

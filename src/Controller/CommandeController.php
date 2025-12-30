@@ -15,7 +15,7 @@ final class CommandeController extends AbstractController
 {
     private const LIMIT = 10;
     public function __construct(private CommandeService $commandeService) {}
-    #[Route('/', name: 'app_commande_list', methods:['GET', 'POST'])]
+    #[Route('/commandes', name: 'app_commande_list', methods:['GET', 'POST'])]
     public function index(Request $request): Response
     {
         $filtre = [];
@@ -83,4 +83,8 @@ final class CommandeController extends AbstractController
         }
         return $this->redirectToRoute('app_commande_list');
     }
+
+
+
+        
 }

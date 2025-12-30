@@ -45,8 +45,8 @@ class CommandeRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('c');
         $qb->select('SUM(c.montantTotal)')
             ->where('c.etat = :etat')
-            ->andWhere('c.date_commande >= :today')
-            ->setParameter('etat', 'terminee')
+            ->andWhere('c.dateCommande >= :today')
+            ->setParameter('etat', 'TERMINEE')
             ->setParameter('today', new \DateTimeImmutable('today'));
         return (float) $qb->getQuery()->getSingleScalarResult();
     }

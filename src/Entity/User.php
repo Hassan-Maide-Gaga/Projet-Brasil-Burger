@@ -4,15 +4,13 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-
-    public const ROLE_GESTIONNAIRE = 'GESTIONNAIRE';
-    public const ROLE_CLIENT = 'CLIENT';
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -30,11 +28,11 @@ class User
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, enumType: RoleUser::class)]
     private ?RoleUser $role = null;
 
     #[ORM\Column]
-    private ?bool $etat = null;
+    private ?bool $etat = true;
 
     public function getId(): ?int
     {
@@ -49,7 +47,6 @@ class User
     public function setNomComplet(string $nomComplet): static
     {
         $this->nomComplet = $nomComplet;
-
         return $this;
     }
 
@@ -61,7 +58,6 @@ class User
     public function setTelephone(string $telephone): static
     {
         $this->telephone = $telephone;
-
         return $this;
     }
 
@@ -73,7 +69,6 @@ class User
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -85,7 +80,6 @@ class User
     public function setPassword(string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 
@@ -97,8 +91,41 @@ class User
     public function setRole(RoleUser $role): static
     {
         $this->role = $role;
-
         return $this;
+    }
+
+    // Méthodes REQUISES par UserInterface
+    public function getRoles(): array
+    {
+        // IMPORTANT : Doit retourner un tableau avec au moins 'ROLE_USER'
+        $roles = ['ROLE_USER'];
+        
+        // Ajoute le rôle spécifique si existant
+        if ($this->role) {
+            if ($this->role instanceof RoleUser) {
+                $roles[] = 'ROLE_' . $this->role->value;
+            } elseif (is_string($this->role)) {
+                $roles[] = 'ROLE_' . strtoupper($this->role);
+            }
+        }
+        
+        return array_unique($roles);
+    }
+
+    public function eraseCredentials(): void
+    {
+        // Si vous stockez des données sensibles temporaires, effacez-les ici
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    // Méthode pour la compatibilité (ancienne méthode)
+    public function getUsername(): string
+    {
+        return $this->getUserIdentifier();
     }
 
     public function isEtat(): ?bool
@@ -109,7 +136,6 @@ class User
     public function setEtat(bool $etat): static
     {
         $this->etat = $etat;
-
         return $this;
     }
 }
