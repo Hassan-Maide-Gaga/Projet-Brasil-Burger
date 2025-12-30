@@ -18,3 +18,11 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+# .gitignore
+# Gardez ces lignes pour ignorer le cache
+/var/
+/vendor/
+
+# MAIS forcez l'ajout des templates
+!templates/security/login.html.twig
+!templates/base.html.twig
